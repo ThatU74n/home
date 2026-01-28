@@ -1,0 +1,6 @@
+---
+cluster-init: {{ is_etcd and is_cluster_init | lower }}
+disable-etcd: {{ (is_etcd) | lower }}
+disable-apiserver: {{ is_etcd | lower }}
+disable-controller-manager: {{ is_etcd | lower }}
+disable-scheduler: {{ is_etcd | lower }}
