@@ -1,3 +1,0 @@
----
-is_cluster_init: true
-k3s_token: "changeme"

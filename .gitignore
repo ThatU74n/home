@@ -1,0 +1,12 @@
+# Python
+.venv
+
+# Terraform
+infrastructure/.terraform
+infrastructure/*.tfvars
+
+vault.key
+
+.env
+.secret
+

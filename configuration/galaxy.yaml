@@ -1,0 +1,15 @@
+namespace: "home"
+readme: "../doc/README.md"
+name: "configuration"
+version: "1.0.0"
+authors:
+  - "U74n utan.dev2358@gmail.com>"
+description: "Homelab configuration"
+# Dependencies on other collections (optional)
+dependencies:
+  "community.general": ">=8.0.0"
+  "community.docker": ">=4.0.0"
+  "community.hashi_vault": ">=5.0.0"
+  "community.proxmox": ">=1.3.0"
+
+repository: "https://github.com/ThatU74n/home"

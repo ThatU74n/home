@@ -1,0 +1,11 @@
+---
+- name: Setup localhost
+  hosts: localhost
+  tasks:
+    - name: Kubectl
+      ansible.builtin.import_role:
+        name: kubectl
+
+    - name: Helm
+      ansible.builtin.import_role:
+        name: helm

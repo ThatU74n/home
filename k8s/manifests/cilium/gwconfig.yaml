@@ -1,0 +1,10 @@
+---
+apiVersion: cilium.io/v2alpha1
+kind: CiliumGatewayClassConfig
+metadata:
+  name: cilium-tailscale-gw-config
+  namespace: infra
+spec:
+  service:
+    type: LoadBalancer
+    loadBalancerClass: tailscale

@@ -1,0 +1,23 @@
+---
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: cilium-gw
+  namespace: infra
+spec:
+  gatewayClassName: cilium
+  infrastructure:
+    annotations:
+      tailscale.com/expose: "true"
+      tailscale.com/hostname: "cilium-gw"
+    parametersRef:
+      group: cilium.io
+      kind: CiliumGatewayClassConfig
+      name: cilium-tailscale-gw-config
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All

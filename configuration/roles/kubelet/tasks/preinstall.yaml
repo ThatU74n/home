@@ -1,0 +1,12 @@
+---
+- name: Turn off swap
+  when: swap_check.stdout != ''
+  become: true
+  ansible.builtin.command: swapoff -a
+
+- name: Remove swap entry in fstab
+  become: true
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: "^([^#].*swap.*)$"
+    replace: '# \1'

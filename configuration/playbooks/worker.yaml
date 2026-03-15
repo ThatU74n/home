@@ -1,0 +1,30 @@
+---
+- name: Configure Worker Nodes
+  hosts: worker
+  tasks:
+    - name: Configure DNS
+      become: true
+      ansible.builtin.blockinfile:
+        path: /etc/resolv.conf
+        block: |
+          nameserver 1.1.1.1
+          nameserver 8.8.8.8
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - DNS CONFIGURATION"
+    - name: Update apt cache (Debian)
+      when: ansible_facts['os_family'] == "Debian"
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Containerd
+      ansible.builtin.import_role:
+        name: containerd
+
+    - name: Kubeadm
+      ansible.builtin.import_role:
+        name: kubeadm
+
+    - name: Kubelet
+      ansible.builtin.import_role:
+        name: kubelet

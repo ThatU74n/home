@@ -1,0 +1,14 @@
+---
+- name: Ensure .kube directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.kube"
+    state: directory
+    mode: "0700"
+
+- name: Fetch .kube/config
+  become: true
+  delegate_to: "{{ groups['control_plane'][0] }}"
+  ansible.builtin.fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ ansible_facts['env']['HOME'] }}/.kube/config"
+    flat: yes
