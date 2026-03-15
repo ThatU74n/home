@@ -11,7 +11,7 @@ spec:
       tailscale.com/expose: "true"
       tailscale.com/hostname: "cilium-gw"
   listeners:
-    - name: ArgoCD-https
+    - name: argocd-listener
       protocol: HTTPS
       port: 4000
       tls:
