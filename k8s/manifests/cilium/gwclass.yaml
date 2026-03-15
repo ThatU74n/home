@@ -10,3 +10,4 @@ spec:
     group: cilium.io
     kind: CiliumGatewayClassConfig
     name: cilium-tailscale-gw-config
+    namespace: kube-system

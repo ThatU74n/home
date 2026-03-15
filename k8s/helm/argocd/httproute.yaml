@@ -1,0 +1,19 @@
+---
+kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: argocd-http-route
+  namespace: argocd
+spec:
+  parentRefs:
+    - name: cilium-gw
+      namespace: infra
+      sectionName: ArgoCD-https
+  rules:
+    - backendRefs:
+        - name: argocd-server
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

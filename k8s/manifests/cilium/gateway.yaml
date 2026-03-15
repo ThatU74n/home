@@ -10,11 +10,19 @@ spec:
     annotations:
       tailscale.com/expose: "true"
       tailscale.com/hostname: "cilium-gw"
-    parametersRef:
-      group: cilium.io
-      kind: CiliumGatewayClassConfig
-      name: cilium-tailscale-gw-config
   listeners:
+    - name: ArgoCD-https
+      protocol: HTTPS
+      port: 4000
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: cilium-gw-tls
+            kind: Secret
+            group: core
+      allowedRoutes:
+        namespaces:
+          from: All
     - name: http
       protocol: HTTP
       port: 80
