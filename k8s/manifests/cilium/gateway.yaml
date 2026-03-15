@@ -19,7 +19,7 @@ spec:
         certificateRefs:
           - name: cilium-gw-tls
             kind: Secret
-            group: core
+            group: ""
       allowedRoutes:
         namespaces:
           from: All
