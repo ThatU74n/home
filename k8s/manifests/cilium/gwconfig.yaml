@@ -3,7 +3,7 @@ apiVersion: cilium.io/v2alpha1
 kind: CiliumGatewayClassConfig
 metadata:
   name: cilium-tailscale-gw-config
-  namespace: infra
+  namespace: kube-system
 spec:
   service:
     type: LoadBalancer
