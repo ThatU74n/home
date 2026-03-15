@@ -5,7 +5,7 @@ metadata:
   name: cilium-gw
   namespace: infra
 spec:
-  gatewayClassName: cilium
+  gatewayClassName: cilium-tailscale-gw-class
   infrastructure:
     annotations:
       tailscale.com/expose: "true"
