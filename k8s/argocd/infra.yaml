@@ -2,16 +2,14 @@
 kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
-  name: homelab
+  name: infra
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: "https://github.com/ThatU74n/home.git"
     targetRevision: main
-    path: k8s/argocd/
+    path: k8s/manifests/
     directory:
       recurse: true
   destination:

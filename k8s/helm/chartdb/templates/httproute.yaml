@@ -1,0 +1,19 @@
+---
+kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: chartdb-http-route
+  namespace: chartdb
+spec:
+  parentRefs:
+    - name: cilium-gw
+      namespace: infra
+      sectionName: chartdb-listener
+  rules:
+    - backendRefs:
+        - name: chartdb-service
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
