@@ -23,6 +23,20 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+
+    - name: chartdb-listener
+      protocol: HTTPS
+      port: 5052
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: cilium-gw-tls
+            kind: Secret
+            group: ""
+      allowedRoutes:
+        namespaces:
+          from: All
+
     - name: http
       protocol: HTTP
       port: 80
