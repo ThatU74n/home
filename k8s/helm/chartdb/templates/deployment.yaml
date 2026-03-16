@@ -18,5 +18,4 @@ spec:
         - name: chartdb
           image: "{{ .Values.chartdb.image.repository }}:{{ .Values.chartdb.image.tag }}"
           ports:
-            - name: chartdb-container-port
-              containerPort: 8080
+            - containerPort: 8080
