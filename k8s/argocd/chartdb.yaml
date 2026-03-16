@@ -1,0 +1,24 @@
+---
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: chartdb
+  namespace: argocd
+spec:
+  project: default
+  source:
+    - repoURL: https://github.com/ThatU74n/home.git
+      targetRevision: main
+      path: k8s/helm/chartdb
+      helm:
+        valueFiles:
+          - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: chartdb
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

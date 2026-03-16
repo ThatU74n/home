@@ -1,0 +1,22 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: chartdb-deployment
+  namespace: chartdb
+spec:
+  selector:
+    matchLabels:
+      app: chartdb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: chartdb
+    spec:
+      containers:
+        - name: chartdb
+          image: "{{ .Values.chartdb.image.repository }}:{{ .Values.chartdb.image.tag }}"
+          ports:
+            - name: chartdb-container-port
+              containerPort: 8080
