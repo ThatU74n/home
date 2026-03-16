@@ -8,7 +8,9 @@ spec:
   parentRefs:
     - name: cilium-gw
       namespace: infra
-      sectionName: argocd-listener
+      sectionName: https
+  hostnames:
+    - argocd.local
   rules:
     - backendRefs:
         - name: argocd-server

@@ -8,7 +8,9 @@ spec:
   parentRefs:
     - name: cilium-gw
       namespace: infra
-      sectionName: chartdb-listener
+      sectionName: https
+  hostnames:
+    - chartdb.local
   rules:
     - backendRefs:
         - name: chartdb-service
