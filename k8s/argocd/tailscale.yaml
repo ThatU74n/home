@@ -9,16 +9,20 @@ metadata:
 spec:
   project: default
   sources:
+    - repoURL: https://github.com/ThatU74n/home.git
+      targetRevision: main
+      ref: home
+
     - repoURL: https://pkgs.tailscale.com/helmcharts
       chart: tailscale-operator
       targetRevision: 1.94.2
       helm:
         valueFiles:
-          - $tailscale/values.yaml
+          - $home/k8s/helm/values.yaml
+
     - repoURL: https://github.com/ThatU74n/home.git
       targetRevision: main
       path: k8s/helm/tailscale
-      ref: tailscale
       directory:
         recurse: true
   destination:
