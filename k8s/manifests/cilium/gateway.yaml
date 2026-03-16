@@ -12,22 +12,9 @@ spec:
       tailscale.com/hostname: "cilium-gw"
       tailscale.com/proxy-class: "stateful-proxy"
   listeners:
-    - name: argocd-listener
+    - name: https
       protocol: HTTPS
-      port: 4000
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - name: cilium-gw-tls
-            kind: Secret
-            group: ""
-      allowedRoutes:
-        namespaces:
-          from: All
-
-    - name: chartdb-listener
-      protocol: HTTPS
-      port: 5052
+      port: 443
       tls:
         mode: Terminate
         certificateRefs:
