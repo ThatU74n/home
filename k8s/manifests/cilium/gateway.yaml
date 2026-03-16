@@ -10,6 +10,7 @@ spec:
     annotations:
       tailscale.com/expose: "true"
       tailscale.com/hostname: "cilium-gw"
+      tailscale.com/proxy-class: "stateful-proxy"
   listeners:
     - name: argocd-listener
       protocol: HTTPS

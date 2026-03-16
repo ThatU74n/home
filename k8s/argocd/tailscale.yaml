@@ -14,10 +14,13 @@ spec:
       targetRevision: 1.94.2
       helm:
         valueFiles:
-          - $home/k8s/helm/tailscale/values.yaml
+          - $tailscale/values.yaml
     - repoURL: https://github.com/ThatU74n/home.git
-      targetRevision: HEAD
-      ref: home
+      targetRevision: main
+      path: k8s/helm/tailscale
+      ref: tailscale
+      directory:
+        recurse: true
   destination:
     server: https://kubernetes.default.svc
     namespace: tailscale
