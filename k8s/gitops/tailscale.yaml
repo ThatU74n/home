@@ -18,11 +18,11 @@ spec:
       targetRevision: 1.94.2
       helm:
         valueFiles:
-          - $home/k8s/helm/tailscale/values.yaml
+          - $home/k8s/deployments/tailscale/values.yaml
 
     - repoURL: https://github.com/ThatU74n/home.git
       targetRevision: main
-      path: k8s/helm/tailscale
+      path: k8s/deployments/tailscale
       directory:
         recurse: true
   destination:

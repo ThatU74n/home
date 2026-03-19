@@ -2,21 +2,23 @@
 kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
-  name: cloudnativepg
+  name: vaultwarden
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://cloudnative-pg.github.io/charts
-    chart: cloudnative-pg
-    targetRevision: 0.27.1
+    repoURL: https://github.com/ThatU74n/home.git
+    targetRevision: vaultwarden
+    path: k8s/deployments/vaultwarden
+    helm:
+      valueFiles:
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: cloudnativepg
+    namespace: vaultwarden
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-

@@ -2,14 +2,13 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: chartdb-service
-  namespace: chartdb
+  name: "{{ .Release.Name }}"
 spec:
   selector:
-    app: chartdb
+    app: "{{ .Release.Name }}"
   type: ClusterIP
   ports:
     - protocol: TCP
-      port: 8080
       targetPort: 80
+      port: "{{ .Values.service.port }}"
       appProtocol: http

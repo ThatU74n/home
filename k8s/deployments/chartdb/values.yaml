@@ -1,0 +1,10 @@
+---
+image:
+  repository: ghcr.io/chartdb/chartdb
+  tag: "latest"
+service:
+  port: 80
+gateway:
+  name: cilium-gw
+  namespace: infra
+  sectionName: https
