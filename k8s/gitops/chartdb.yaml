@@ -2,21 +2,20 @@
 kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
-  name: homelab
+  name: chartdb
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: "https://github.com/ThatU74n/home.git"
+    repoURL: https://github.com/ThatU74n/home.git
     targetRevision: main
-    path: k8s/argocd/
-    directory:
-      recurse: true
+    path: k8s/deployments/chartdb
+    helm:
+      valueFiles:
+        - values.yaml
   destination:
-    server: "https://kubernetes.default.svc"
-    namespace: default
+    server: https://kubernetes.default.svc
+    namespace: chartdb
   syncPolicy:
     automated:
       prune: true
