@@ -1,5 +1,0 @@
----
-chartdb:
-  image:
-    repository: ghcr.io/chartdb/chartdb
-    tag: "latest"
