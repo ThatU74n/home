@@ -10,5 +10,5 @@ spec:
   ports:
     - protocol: TCP
       targetPort: 80
-      port: "{{ .Values.service.port }}"
+      port: {{ .Values.service.port }}
       appProtocol: http
