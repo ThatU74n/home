@@ -15,4 +15,4 @@ spec:
       - name: postgres-user
         login: true
         passwordSecret:
-          name: postgres-secret
+          name: postgres-auth
