@@ -8,7 +8,7 @@ spec:
   instances: 1
   imageName: ghcr.io/cloudnative-pg/postgresql:16
   storage:
-    size: 200Gi
+    size: 50Gi
     storageClass: longhorn
   managed:
     roles:
