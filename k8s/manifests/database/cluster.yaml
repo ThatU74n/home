@@ -1,0 +1,18 @@
+---
+kind: Cluster
+apiVersion: postgresql.cnpg.io/v1
+metadata:
+  name: postgres
+  namespace: infra
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  storage:
+    size: 300Gi
+    storageClass: local-path
+  managed:
+    roles:
+      - name: postgres-user
+        login: true
+        passwordSecret:
+          name: postgres-secret
