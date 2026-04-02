@@ -81,15 +81,19 @@ jobs:
             --url "$GITEA_SERVER_URL" \
             --token "$GITEA_SERVER_TOKEN"
 
+          echo "Targeting Repo: $REPO"
+          echo "Targeting PR: $PR_NUMBER"
+
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
             tea-cli pr comment "$PR_NUMBER" \
+              --login gitea \
               --repo $REPO \
               --body "$TERRAFORM_RESULT"
           fi 
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
-            echo "Posting Ansible result to PR $PR_NUMBER in repo $REPO"
             tea-cli pr comment "$PR_NUMBER" \
+              --login gitea \
               --repo $REPO \
               --body "$ANSIBLE_RESULT"
           fi
