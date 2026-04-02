@@ -93,15 +93,13 @@ jobs:
           echo "Ansible Result: $ANSIBLE_RESULT"
 
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
-            tea-cli issues comment "$PR_NUMBER" \
+            tea-cli api post /repos/$REPO/issues/$PR_NUMBER/comments \
               --login gitea \
-              --repo $REPO \
-              --body "$TERRAFORM_RESULT"
+              -d "{\"body\": \"$TERRAFORM_RESULT\"}"
           fi 
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
-            tea-cli issues comment "$PR_NUMBER" \
+            tea-cli api post /repos/$REPO/issues/$PR_NUMBER/comments \
               --login gitea \
-              --repo $REPO \
-              --body "$ANSIBLE_RESULT"
+              -d "{\"body\": \"$ANSIBLE_RESULT\"}"
           fi
