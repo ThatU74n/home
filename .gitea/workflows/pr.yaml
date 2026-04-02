@@ -76,30 +76,26 @@ jobs:
           GITEA_SERVER_TOKEN: ${{ secrets.TOKEN }}
           REPO: utan/home
           PR_NUMBER: ${{ gitea.event.pull_request.number }}
-          TERRAFORM_RESULT: ${{ needs.terraform-dry-run.outputs.terraform_dry_run }}
-          ANSIBLE_RESULT: ${{ needs.ansible-dry-run.outputs.ansible_dry_run }}
+          TERRAFORM_RESULT: ${{ needs.terraform-dry-run.result == 'success' && needs.terraform-dry-run.outputs.terraform_dry_run || '' }}
+          ANSIBLE_RESULT: ${{ needs.ansible-dry-run.result == 'success' && needs.ansible-dry-run.outputs.ansible_dry_run || '' }}
         run: |
-          sudo apt-get update 
-          sudo apt-get install -y tea-cli
-
-          tea-cli logins add \
-            --name gitea \
-            --url "$GITEA_SERVER_URL" \
-            --token "$GITEA_SERVER_TOKEN"
-
           echo "Targeting Repo: $REPO"
           echo "Targeting PR: $PR_NUMBER"
           echo "Terraform Result: $TERRAFORM_RESULT"
           echo "Ansible Result: $ANSIBLE_RESULT"
 
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
-            tea-cli api post /repos/$REPO/issues/$PR_NUMBER/comments \
-              --login gitea \
-              -d "{\"body\": \"$TERRAFORM_RESULT\"}"
-          fi 
+            curl -s -X POST \
+              -H "Authorization: token $GITEA_SERVER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"body\": \"$TERRAFORM_RESULT\"}" \
+              "$GITEA_SERVER_URL/api/v1/repos/$REPO/issues/$PR_NUMBER/comments"
+          fi
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
-            tea-cli api post /repos/$REPO/issues/$PR_NUMBER/comments \
-              --login gitea \
-              -d "{\"body\": \"$ANSIBLE_RESULT\"}"
+            curl -s -X POST \
+              -H "Authorization: token $GITEA_SERVER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"body\": \"$ANSIBLE_RESULT\"}" \
+              "$GITEA_SERVER_URL/api/v1/repos/$REPO/issues/$PR_NUMBER/comments"
           fi
