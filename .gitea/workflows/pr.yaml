@@ -88,6 +88,7 @@ jobs:
           fi 
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
+            echo "Posting Ansible result to PR $PR_NUMBER in repo $REPO"
             tea-cli pr comment "$PR_NUMBER" \
               --repo $REPO \
               --body "$ANSIBLE_RESULT"
