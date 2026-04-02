@@ -1,0 +1,32 @@
+---
+- name: Ensure runner volume if not using host path
+  when: gitea_act_runner_data_path == ""
+  community.docker.docker_volume:
+    name: runner_data
+    state: present
+
+- name: Ensure runner volume if using host path
+  when: gitea_act_runner_data_path != ""
+  ansible.builtin.file:
+    path: "{{ gitea_act_runner_data_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Ensure runner directory
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/gitea/runner"
+    state: directory
+    mode: "0755"
+
+- name: Copy runner config template
+  ansible.builtin.template:
+    src: runner_config.yaml.jinja
+    dest: "{{ ansible_facts['env']['HOME'] }}/gitea/runner/runner_config.yaml"
+    mode: "0644"
+
+- name: Copy runner template
+  ansible.builtin.template:
+    src: runner.yaml.jinja
+    dest: "{{ ansible_facts['env']['HOME'] }}/gitea/runner/compose.yaml"
+    mode: "0600"
+  notify: Restart gitea runner

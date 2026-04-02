@@ -1,0 +1,51 @@
+---
+- name: Install Dependencies
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+
+- name: Download Docker GPG key
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+- name: Add Docker repository
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  register: docker_repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: "https://download.docker.com/linux/debian"
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: stable
+    signed_by: /etc/apt/keyrings/docker.asc
+    state: present
+    enabled: true
+
+- name: Update apt cache
+  become: true
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - docker_repository.changed
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Ensure docker package
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present

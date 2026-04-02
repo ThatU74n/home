@@ -1,0 +1,12 @@
+---
+- name: Install
+  ansible.builtin.import_tasks: install.yaml
+- name: Configure
+  ansible.builtin.import_tasks: configure.yaml
+
+- name: Ensure Nginx is running
+  become: true
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true

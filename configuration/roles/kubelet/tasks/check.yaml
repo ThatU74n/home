@@ -2,11 +2,11 @@
 - name: Check swap
   become: true
   ansible.builtin.command: swapon --show
-  register: swap_check
+  register: kubelet_swap_check
   changed_when: false
   failed_when: false
 
 - name: Check Kubernetes repository
   ansible.builtin.stat:
     path: /etc/apt/sources.list.d/kubernetes.sources
-  register: kubernetes_repository_check
+  register: kubelet_kubernetes_repository_check

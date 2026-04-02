@@ -1,0 +1,26 @@
+---
+- name: Remove default Nginx site
+  become: true
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Copy sites-available
+  become: true
+  ansible.builtin.copy:
+    src: "{{ nginx_profile }}/"
+    dest: /etc/nginx/sites-available/
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Symlink sites-enabled
+  become: true
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ nginx_site_config }}"
+    dest: "/etc/nginx/sites-enabled/{{ nginx_site_config }}"
+    state: link
+  loop: "{{ nginx_sites_enabled }}"
+  loop_control:
+    loop_var: nginx_site_config
+  notify: Reload Nginx

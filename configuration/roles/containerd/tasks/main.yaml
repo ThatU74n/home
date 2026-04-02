@@ -1,9 +1,13 @@
 ---
-- ansible.builtin.import_tasks: preinstall.yaml
-- ansible.builtin.import_tasks: install.yaml
-- ansible.builtin.import_tasks: configure.yaml
+- name: Preinstall
+  ansible.builtin.import_tasks: preinstall.yaml
+- name: Install
+  ansible.builtin.import_tasks: install.yaml
+- name: Configure
+  ansible.builtin.import_tasks: configure.yaml
 
 - name: Check if containerd is installed
   ansible.builtin.command: containerd --version
   register: containerd_check
+  changed_when: false
   failed_when: containerd_check.rc != 0

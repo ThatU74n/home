@@ -1,0 +1,13 @@
+---
+- name: Install dependency
+  when: ansible_facts['os_family'] == 'Debian'
+  become: true
+  ansible.builtin.apt:
+    name:
+      - python3-psycopg2
+    state: present
+
+- name: Ensure gitea network
+  community.docker.docker_network:
+    name: gitea_network
+    state: present

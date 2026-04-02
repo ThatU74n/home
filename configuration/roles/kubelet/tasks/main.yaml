@@ -1,4 +1,7 @@
 ---
-- ansible.builtin.import_tasks: check.yaml
-- ansible.builtin.import_tasks: preinstall.yaml
-- ansible.builtin.import_tasks: install.yaml
+- name: Check
+  ansible.builtin.import_tasks: check.yaml
+- name: Preinstall
+  ansible.builtin.import_tasks: preinstall.yaml
+- name: Install
+  ansible.builtin.import_tasks: install.yaml

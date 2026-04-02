@@ -11,6 +11,7 @@ terraform {
     }
   }
   backend "s3" {
+    profile      = "personal"
     bucket       = "terraform-u74n"
     key          = "terraform.tfstate"
     region       = "ap-southeast-1"
@@ -20,12 +21,10 @@ terraform {
   }
 }
 
-
-#provider "aws" {
-#  region     = "ap-southeast-1"
-#  access_key = data.vault_generic_secret.aws_kv.data["aws_access_key"]
-#  secret_key = data.vault_generic_secret.aws_kv.data["aws_secret_key"]
-#}
+provider "aws" {
+  region  = "ap-southeast-1"
+  profile = "personal"
+}
 
 provider "proxmox" {
   endpoint  = "https://192.168.1.7:8006/api2/json"

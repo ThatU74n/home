@@ -1,0 +1,13 @@
+---
+- name: Get runner registration token
+  register: gitea_runner_token_res
+  ansible.builtin.uri:
+    url: http://localhost:3000/api/v1/admin/actions/runners/registration-token
+    method: POST
+    headers:
+      Authorization: "Basic {{ (gitea_admin_user + ':' + gitea_admin_password) | b64encode }}"
+
+- name: Set runner registration token fact
+  when: gitea_runner_token_res is not skipped and gitea_runner_token_res.status == 200
+  ansible.builtin.set_fact:
+    gitea_act_runner_registration_token: "{{ gitea_runner_token_res.json.token }}"

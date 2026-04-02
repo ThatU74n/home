@@ -11,7 +11,7 @@
 
 - name: Download Kubernetes GPG key
   become: true
-  when: kubernetes_repository_check.stat.exists == false
+  when: not kubeadm_kubernetes_repository_check.stat.exists
   ansible.builtin.get_url:
     url: https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key
     dest: /etc/apt/keyrings/kubernetes.asc
@@ -19,14 +19,15 @@
 
 - name: Dearmor Kubernetes GPG key
   become: true
-  when: kubernetes_repository_check.stat.exists == false
+  when: not kubeadm_kubernetes_repository_check.stat.exists
   ansible.builtin.command: "gpg --dearmor -o /etc/apt/keyrings/kubernetes.gpg /etc/apt/keyrings/kubernetes.asc"
   args:
     creates: /etc/apt/keyrings/kubernetes.gpg
 
 - name: Add Kubernetes repository
   become: true
-  when: kubernetes_repository_check.stat.exists == false
+  when: not kubeadm_kubernetes_repository_check.stat.exists
+  register: kubeadm_add_kubernetes_repository
   ansible.builtin.deb822_repository:
     name: kubernetes
     types: deb

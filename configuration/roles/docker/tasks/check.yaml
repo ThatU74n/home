@@ -1,0 +1,5 @@
+---
+- name: Check Docker repository
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/docker.sources
+  register: docker_repository_check

@@ -7,9 +7,10 @@ authors:
 description: "Homelab configuration"
 # Dependencies on other collections (optional)
 dependencies:
-  "community.general": ">=8.0.0"
-  "community.docker": ">=4.0.0"
+  "community.general": ">=12.5.0"
+  "community.docker": ">=5.1.0"
   "community.hashi_vault": ">=5.0.0"
-  "community.proxmox": ">=1.3.0"
+  "community.proxmox": ">=1.6.0"
+  "comunity.postgresql": ">=4.2.0"
 
 repository: "https://github.com/ThatU74n/home"

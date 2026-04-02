@@ -1,0 +1,29 @@
+---
+- name: Ensure Postgres volume if not using host path
+  when: gitea_postgres_data_path == ""
+  community.docker.docker_volume:
+    name: gitea_postgres_data
+    state: present
+
+- name: Ensure Postgres volume if using host path
+  when: gitea_postgres_data_path != ""
+  become: true
+  ansible.builtin.file:
+    path: "{{ gitea_postgres_data_path }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+
+- name: Ensure postgresql directory
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/gitea/postgres"
+    state: directory
+    mode: "0755"
+
+- name: Copy postgresql template
+  ansible.builtin.template:
+    src: postgres.yaml.jinja
+    dest: "{{ ansible_facts['env']['HOME'] }}/gitea/postgres/compose.yaml"
+    mode: "0600"
+  notify: Restart postgresql

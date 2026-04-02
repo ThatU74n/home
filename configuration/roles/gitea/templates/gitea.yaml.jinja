@@ -1,0 +1,46 @@
+---
+services:
+  gitea:
+    container_name: gitea_server
+    image: docker.gitea.com/gitea:{{ gitea_tag }}
+    restart: always
+    labels:
+      - app=gitea
+    environment:
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: postgres:5432
+      GITEA__database__NAME: giteadb 
+      GITEA__database__USER: gitea 
+      GITEA__database__PASSWD: {{ gitea_postgres_password }}
+    volumes:
+{% if gitea_data_path is defined %}
+      - {{ gitea_data_path }}:/var/lib/gitea
+{% else %}
+      - gitea_data:/var/lib/gitea 
+{% endif %}
+{% if gitea_config_path is defined %}
+      - {{ gitea_config_path }}:/etc/gitea:ro
+{% endif %}
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 3000:3000
+      - 2222:2222
+    networks:
+      - gitea_network
+
+{% if gitea_data_path == "" %}
+volumes:
+  gitea_data:
+    name: gitea_data
+    external: true
+{% endif %}
+
+networks:
+  gitea_network:
+    name: gitea_network
+    external: true
+
+
+

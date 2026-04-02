@@ -1,2 +1,3 @@
 ---
-- ansible.builtin.import_tasks: install.yaml
+- name: Install
+  ansible.builtin.import_tasks: install.yaml

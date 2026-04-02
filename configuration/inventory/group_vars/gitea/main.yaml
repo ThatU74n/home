@@ -1,0 +1,26 @@
+---
+# Ansible connection
+ansible_user: gitea
+# Gitea Administration
+gitea_admin_user: utan
+gitea_admin_email: utan.dev2358@gmail.com
+# Gitea container
+gitea_tag: 1.25.5-rootless
+gitea_postgres_tag: 15
+gitea_act_runner_tag: latest
+# Gitea volumes:
+gitea_data_path: "{{ ansible_facts['env']['HOME'] }}/gitea_data"
+gitea_act_runner_data_path: "{{ ansible_facts['env']['HOME'] }}/gitea_act_runner_data"
+gitea_postgres_data_path: "{{ ansible_facts['env']['HOME'] }}/gitea_postgres_data"
+# Postgres
+gitea_postgres_super_user: postgres
+# Misc
+gitea_act_runner_registration_token:
+
+# Nginx
+nginx_profile: gitea
+nginx_sites_enabled:
+  - gitea.local.conf
+
+# Tailscale
+tailscale_hostname: gitea
