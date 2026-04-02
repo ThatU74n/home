@@ -89,16 +89,18 @@ jobs:
 
           echo "Targeting Repo: $REPO"
           echo "Targeting PR: $PR_NUMBER"
+          echo "Terraform Result: $TERRAFORM_RESULT"
+          echo "Ansible Result: $ANSIBLE_RESULT"
 
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
-            tea-cli pr comment "$PR_NUMBER" \
+            tea-cli issues comment "$PR_NUMBER" \
               --login gitea \
               --repo $REPO \
               --body "$TERRAFORM_RESULT"
           fi 
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
-            tea-cli pr comment "$PR_NUMBER" \
+            tea-cli issues comment "$PR_NUMBER" \
               --login gitea \
               --repo $REPO \
               --body "$ANSIBLE_RESULT"
