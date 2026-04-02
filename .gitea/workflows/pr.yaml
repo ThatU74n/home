@@ -64,23 +64,23 @@ jobs:
       - ansible-dry-run
     if: always()
     steps:
-      - name: Setup tea
+      - name: Comment on PR
+        env:
+          GITEA_SERVER_URL: http://gitea_server:3000
+          GITEA_SERVER_TOKEN: ${{ secrets.TOKEN }}
+          REPO: ${{ gitea.repository }}
+          PR_NUMBER: ${{ gitea.event.pull_request.number }}
+          TERRAFORM_RESULT: ${{ needs.terraform-dry-run.outputs.terraform_dry_run }}
+          ANSIBLE_RESULT: ${{ needs.ansible-dry-run.outputs.ansible_dry_run }}
         run: |
           sudo apt-get update 
           sudo apt-get install -y tea-cli
 
           tea-cli logins add \
             --name gitea \
-            --url "http://gitea_server:3000" \
-            --token "${{ secrets.TOKEN }}"
+            --url "$GITEA_SERVER_URL" \
+            --token "$GITEA_SERVER_TOKEN"
 
-      - name: Comment on PR
-        env:
-          REPO: ${{ gitea.repository }}
-          PR_NUMBER: ${{ gitea.event.pull_request.number }}
-          TERRAFORM_RESULT: ${{ needs.terraform-dry-run.outputs.terraform_dry_run }}
-          ANSIBLE_RESULT: ${{ needs.ansible-dry-run.outputs.ansible_dry_run }}
-        run: |
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
             tea-cli pr comment "$PR_NUMBER" \
               --repo $REPO \
