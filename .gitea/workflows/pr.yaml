@@ -76,12 +76,11 @@ jobs:
 
       - name: Comment on PR
         env:
-          REPO: utan/home
-          PR_NUMBER: ${{ pr.number }}
+          REPO: ${{ gitea.repository }}
+          PR_NUMBER: ${{ gitea.event.pull_request.number }}
+          TERRAFORM_RESULT: ${{ needs.terraform-dry-run.outputs.terraform_dry_run }}
+          ANSIBLE_RESULT: ${{ needs.ansible-dry-run.outputs.ansible_dry_run }}
         run: |
-          ANSIBLE_RESULT="${{ needs.ansible-dry-run.outputs.ansible_dry_run }}"
-          TERRAFORM_RESULT="${{ needs.terraform-dry-run.outputs.terraform_dry_run }}"
-
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
             tea-cli pr comment "$PR_NUMBER" \
               --repo $REPO \
