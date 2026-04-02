@@ -1,0 +1,23 @@
+---
+- name: Check if docker is installed
+  ansible.builtin.command: which docker
+  register: gitea_docker_check
+  changed_when: false
+  ignore_errors: true
+
+- name: Check Gitea admin user
+  register: gitea_admin_user_check
+  changed_when: false
+  ignore_errors: true
+  community.docker.docker_container_exec:
+    container: gitea_server
+    argv:
+      - /bin/sh
+      - -c
+      - "gitea --work-path /var/lib/gitea admin user list | grep -w {{ gitea_admin_user }}"
+
+- name: Assert docker is installed
+  ansible.builtin.assert:
+    that:
+      - gitea_docker_check.rc == 0
+    fail_msg: "Docker is not installed. Please include the docker role first."

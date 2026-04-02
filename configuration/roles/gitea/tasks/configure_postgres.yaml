@@ -1,0 +1,24 @@
+---
+- name: Ensure role gitea in postgresql
+  community.postgresql.postgresql_user:
+    name: gitea
+    password: "{{ gitea_postgres_password }}"
+    login_user: "{{ gitea_postgres_super_user }}"
+    login_password: "{{ gitea_postgres_super_password }}"
+    login_host: localhost
+    login_port: 5432
+    state: present
+
+- name: Ensure database gitea in postgresql
+  community.postgresql.postgresql_db:
+    name: giteadb
+    owner: gitea
+    encoding: UTF8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+    login_user: "{{ gitea_postgres_super_user }}"
+    login_password: "{{ gitea_postgres_super_password }}"
+    login_host: localhost
+    login_port: 5432
+    state: present

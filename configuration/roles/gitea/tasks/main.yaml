@@ -1,0 +1,41 @@
+---
+- name: Check
+  ansible.builtin.import_tasks: check.yaml
+- name: Preinstall
+  ansible.builtin.import_tasks: preinstall.yaml
+- name: Install PostgreSQL
+  ansible.builtin.import_tasks: install_postgres.yaml
+- name: Install Gitea
+  ansible.builtin.import_tasks: install_gitea.yaml
+
+- name: Ensure postgresql is running
+  community.docker.docker_compose_v2:
+    project_src: "{{ ansible_facts['env']['HOME'] }}/gitea/postgres"
+    wait: true
+    wait_timeout: 60
+    state: present
+
+- name: Configure PostgreSQL
+  ansible.builtin.import_tasks: configure_postgres.yaml
+
+- name: Ensure gitea is running
+  community.docker.docker_compose_v2:
+    project_src: "{{ ansible_facts['env']['HOME'] }}/gitea/gitea"
+    wait: true
+    wait_timeout: 60
+    state: present
+
+- name: Configure Gitea
+  ansible.builtin.import_tasks: configure_gitea.yaml
+
+- name: Preinstall Gitea Runner
+  ansible.builtin.import_tasks: preinstall_runner.yaml
+- name: Install Gitea Runner
+  ansible.builtin.import_tasks: install_runner.yaml
+
+- name: Ensure gitea runner is running
+  community.docker.docker_compose_v2:
+    project_src: "{{ ansible_facts['env']['HOME'] }}/gitea/runner"
+    wait: true
+    wait_timeout: 60
+    state: present

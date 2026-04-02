@@ -1,0 +1,5 @@
+---
+- name: Check Tailscale repository
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/tailscale.sources
+  register: tailscale_repository_check

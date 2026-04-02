@@ -1,18 +1,17 @@
 all:
   children:
-    # bastion:
-    # Managed by AWS EC2
+    # Managed by Proxmox
+    gitea:
+    # Managed by Proxmox
     control_plane:
     # Managed by Proxmox
     worker:
-      # Managed by Proxmox
-
       # My old dell vostro
-      # hosts:
-      #   dell_vostro:
-      #     ansible_host: 192.168.1.24
-      #     ansible_user: k-u74n
-      #     ansible_become: true
+      hosts:
+        dell_vostro:
+          ansible_host: 192.168.1.24
+          ansible_user: k-u74n
+          ansible_become: true
 
     local:
       # The CLI host

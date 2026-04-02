@@ -2,4 +2,4 @@
 - name: Check Kubernetes repository
   ansible.builtin.stat:
     path: /etc/apt/sources.list.d/kubernetes.sources
-  register: kubernetes_repository_check
+  register: kubeadm_kubernetes_repository_check

@@ -1,0 +1,15 @@
+---
+- name: Restart gitea
+  community.docker.docker_compose_v2:
+    project_src: "{{ ansible_facts['env']['HOME'] }}/gitea/gitea"
+    state: restarted
+
+- name: Restart gitea runner
+  community.docker.docker_compose_v2:
+    project_src: "{{ ansible_facts['env']['HOME'] }}/gitea/runner"
+    state: restarted
+
+- name: Restart postgresql
+  community.docker.docker_compose_v2:
+    project_src: "{{ ansible_facts['env']['HOME'] }}/gitea/postgres"
+    state: restarted

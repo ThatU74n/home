@@ -1,0 +1,37 @@
+---
+services:
+  runner:
+    container_name: runner 
+    image: gitea/act_runner:{{ gitea_act_runner_tag }}
+    labels:
+      - app=gitea
+    environment:
+      GITEA_INSTANCE_URL: http://gitea_server:3000
+      GITEA_RUNNER_REGISTRATION_TOKEN: "{{ gitea_act_runner_registration_token }}"
+      GITEA_RUNNER_NAME: infra
+      GITEA_RUNNER_LABELS: "infra:docker://docker.gitea.com/runner-images:ubuntu-latest"
+      CONFIG_FILE: /config.yaml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./runner_config.yaml:/config.yaml
+{% if gitea_act_runner_data_path != '' %}
+      - {{ gitea_act_runner_data_path }}:/data
+{% else %}
+      - runner_data:/data
+{% endif %}
+    networks:
+      - gitea_network
+
+{% if gitea_act_runner_data_path == "" %}
+volumes:
+  runner_data:
+    name: runner_data
+    external: true
+{% endif %}
+
+networks:
+  gitea_network:
+    name: gitea_network
+    external: true
+
+  

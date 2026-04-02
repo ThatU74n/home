@@ -1,0 +1,30 @@
+---
+- name: Ensure Gitea volume if not using host path
+  when: gitea_data_path == ""
+  community.docker.docker_volume:
+    name: gitea_data
+    state: present
+
+- name: Ensure Gitea volume if using host path
+  when: gitea_data_path != ""
+  become: true
+  ansible.builtin.file:
+    path: "{{ gitea_data_path }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+    recurse: true
+
+- name: Ensure gitea directory
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/gitea/gitea"
+    state: directory
+    mode: "0755"
+
+- name: Copy gitea template
+  ansible.builtin.template:
+    src: gitea.yaml.jinja
+    dest: "{{ ansible_facts['env']['HOME'] }}/gitea/gitea/compose.yaml"
+    mode: "0600"
+  notify: Restart gitea

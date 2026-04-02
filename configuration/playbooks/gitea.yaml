@@ -1,0 +1,23 @@
+---
+- name: Configure Gitea on the server
+  hosts: gitea
+  tasks:
+    - name: Preconfigure virtual machine
+      ansible.builtin.import_role:
+        name: vm
+
+    - name: Install Tailscale
+      ansible.builtin.import_role:
+        name: tailscale
+
+    - name: Install Nginx
+      ansible.builtin.import_role:
+        name: nginx
+
+    - name: Install Docker
+      ansible.builtin.import_role:
+        name: docker
+
+    - name: Install Gitea
+      ansible.builtin.import_role:
+        name: gitea

@@ -1,0 +1,16 @@
+---
+# Administration
+gitea_admin_user: admin
+gitea_admin_email: admin@admin.com
+# Image
+gitea_tag:
+gitea_postgres_tag:
+gitea_act_runner_tag:
+# Volumes
+gitea_data_path:
+gitea_act_runner_data_path:
+gitea_postgres_data_path:
+# Postgres
+gitea_postgres_super_user: postgres
+# Misc
+gitea_act_runner_registration_token:

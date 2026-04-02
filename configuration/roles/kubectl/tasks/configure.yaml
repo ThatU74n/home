@@ -11,4 +11,4 @@
   ansible.builtin.fetch:
     src: /etc/kubernetes/admin.conf
     dest: "{{ ansible_facts['env']['HOME'] }}/.kube/config"
-    flat: yes
+    flat: true
