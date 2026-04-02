@@ -1,0 +1,3 @@
+---
+ansible_password: pro123
+ansible_become_password: pro123

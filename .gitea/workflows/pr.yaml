@@ -1,0 +1,97 @@
+---
+name: Pull Request CI
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - main
+
+jobs:
+  changes:
+    name: Register changes
+    runs-on: infra
+    outputs:
+      changes: ${{ steps.filters.outputs.filters }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
+
+      - name: Register changes
+        id: filters
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        with:
+          filters: ".gitea/ci-filter.yaml"
+
+  terraform-dry-run:
+    name: Terraform Dry Run
+    runs-on: infra
+    needs: changes
+    if: needs.changes.outputs.changes == 'terraform'
+    outputs:
+      terraform_dry_run: ${{ steps.terraform_dry_run.outputs.terraform_dry_run }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
+
+      - name: Terraform Dry Run
+        id: terraform_dry_run
+        run: echo "terraform_dry_run=Terraform dry run result" >> $GITHUB_OUTPUT
+
+  ansible-dry-run:
+    name: Ansible Dry Run
+    runs-on: infra
+    needs: changes
+    if: needs.changes.outputs.changes == 'ansible'
+    outputs:
+      ansible_dry_run: ${{ steps.ansible_dry_run.outputs.ansible_dry_run }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
+
+      - name: Ansible Dry Run
+        id: ansible_dry_run
+        run: echo "ansible_dry_run=Ansible dry run result" >> $GITHUB_OUTPUT
+
+  report:
+    name: PR Report
+    runs-on: infra
+    needs:
+      - terraform-dry-run
+      - ansible-dry-run
+    if: always()
+    steps:
+      - name: Setup gitea-cli
+        run: |
+          curl -sSL https://github.com/gitea/cli/releases/latest/download/gitea-cli_linux_amd64.tar.gz | tar -xz -C /usr/local/bin
+          gitea-cli version
+
+      - name: Comment on PR
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          GITEA_BASE_URL: "http://gitea_server:3000"
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ pr.number }}
+        run: |
+          ANSIBLE_RESULT="${{ needs.ansible-dry-run.outputs.ansible_dry_run }}"
+          TERRAFORM_RESULT="${{ needs.terraform-dry-run.outputs.terraform_dry_run }}"
+
+          if [[ ! -z "$TERRAFORM_RESULT" ]]; then
+            gitea-cli pr comment \
+              --repo $REPO \
+              --number $PR_NUMBER \
+              --base-url $GITEA_BASE_URL \
+              --token $GITEA_TOKEN \
+              --body "$TERRAFORM_RESULT"
+          fi 
+
+          if [[ ! -z "$ANSIBLE_RESULT" ]]; then
+            gitea-cli pr comment \
+              --repo $REPO \
+              --number $PR_NUMBER \
+              --base-url $GITEA_BASE_URL \
+              --token $GITEA_TOKEN \
+              --body "$ANSIBLE_RESULT"
+          fi

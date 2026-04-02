@@ -2,7 +2,7 @@
 - name: Configure Control Plane
   hosts: control_plane
   tasks:
-    - name: Reconfigure virtual machine
+    - name: Preconfigure virtual machine
       ansible.builtin.import_role:
         name: vm
 

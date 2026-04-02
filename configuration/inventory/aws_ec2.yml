@@ -1,0 +1,14 @@
+---
+a: placeholder
+# plugin: amazon.aws.aws_ec2
+# aws_access_key_id: "{{ (lookup('file', 'inventory/group_vars/aws_ec2.yaml') | from_yaml).aws_access_key_id }}"
+# aws_secret_key: "{{ (lookup('file', 'inventory/group_vars/aws_ec2.yaml') | from_yaml).aws_secret_key }}"
+# regions:
+#   - ap-southeast-1
+# filters:
+#   instance-state-name:
+#     - running
+#
+# keyed_groups:
+#   - key: tags.role
+#     separator: ""
