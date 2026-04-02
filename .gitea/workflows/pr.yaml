@@ -54,10 +54,8 @@ jobs:
 
       - name: Ansible Dry Run
         id: ansible_dry_run
-        run: echo "ansible_dry_run=Ansible dry run result" >> $GITHUB_OUTPUT
-
-      - name: Run debug
         run: |
+          echo "ansible_dry_run=Ansible dry run result" >> $GITHUB_OUTPUT
           echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
           echo ">> $(cat $GITHUB_OUTPUT)"
 
