@@ -68,7 +68,7 @@ jobs:
         env:
           GITEA_SERVER_URL: http://gitea_server:3000
           GITEA_SERVER_TOKEN: ${{ secrets.TOKEN }}
-          REPO: utan/home
+          REPO: /utan/home
           PR_NUMBER: ${{ gitea.event.pull_request.number }}
           TERRAFORM_RESULT: ${{ needs.terraform-dry-run.outputs.terraform_dry_run }}
           ANSIBLE_RESULT: ${{ needs.ansible-dry-run.outputs.ansible_dry_run }}
