@@ -69,7 +69,7 @@ jobs:
           sudo apt-get update 
           sudo apt-get install -y tea-cli
 
-          tea login add \
+          tea-cli login add \
             --name gitea \
             --base-url "http://gitea_server:3000" \
             --token "${{ secrets.TOKEN }}"
@@ -83,13 +83,13 @@ jobs:
           TERRAFORM_RESULT="${{ needs.terraform-dry-run.outputs.terraform_dry_run }}"
 
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
-            tea pr comment "$PR_NUMBER" \
+            tea-cli pr comment "$PR_NUMBER" \
               --repo $REPO \
               --body "$TERRAFORM_RESULT"
           fi 
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
-            tea pr comment "$PR_NUMBER" \
+            tea-cli pr comment "$PR_NUMBER" \
               --repo $REPO \
               --body "$ANSIBLE_RESULT"
           fi
