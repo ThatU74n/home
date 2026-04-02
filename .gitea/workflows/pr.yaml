@@ -56,6 +56,10 @@ jobs:
         id: ansible_dry_run
         run: echo "ansible_dry_run=Ansible dry run result" >> $GITHUB_OUTPUT
 
+      - name: Run debug
+        run: |
+          echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
+
   report:
     name: PR Report
     runs-on: infra
