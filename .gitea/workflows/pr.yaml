@@ -29,7 +29,7 @@ jobs:
     name: Terraform Dry Run
     runs-on: infra
     needs: changes
-    if: needs.changes.outputs.changes == 'terraform'
+    if: contain(needs.changes.outputs.changes, 'infrastructure')
     outputs:
       terraform_dry_run: ${{ steps.terraform_dry_run.outputs.terraform_dry_run }}
     steps:
@@ -44,7 +44,7 @@ jobs:
     name: Ansible Dry Run
     runs-on: infra
     needs: changes
-    if: needs.changes.outputs.changes == 'ansible'
+    if: contain(needs.changes.outputs.changes, 'configuration')
     outputs:
       ansible_dry_run: ${{ steps.ansible_dry_run.outputs.ansible_dry_run }}
     steps:
@@ -63,35 +63,32 @@ jobs:
       - ansible-dry-run
     if: always()
     steps:
-      - name: Setup gitea-cli
+      - name: Setup tea
         run: |
-          curl -sSL https://github.com/gitea/cli/releases/latest/download/gitea-cli_linux_amd64.tar.gz | tar -xz -C /usr/local/bin
-          gitea-cli version
+          sudo apt-get update 
+          sudo apt-get install -y tea-cli
+
+          tea login add \
+            --name gitea \
+            --base-url "http://gitea_server:3000" \
+            --token "${{ secrets.TOKEN }}"
 
       - name: Comment on PR
         env:
-          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-          GITEA_BASE_URL: "http://gitea_server:3000"
-          REPO: ${{ github.repository }}
+          REPO: utan/home
           PR_NUMBER: ${{ pr.number }}
         run: |
           ANSIBLE_RESULT="${{ needs.ansible-dry-run.outputs.ansible_dry_run }}"
           TERRAFORM_RESULT="${{ needs.terraform-dry-run.outputs.terraform_dry_run }}"
 
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
-            gitea-cli pr comment \
+            tea pr comment "$PR_NUMBER" \
               --repo $REPO \
-              --number $PR_NUMBER \
-              --base-url $GITEA_BASE_URL \
-              --token $GITEA_TOKEN \
               --body "$TERRAFORM_RESULT"
           fi 
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
-            gitea-cli pr comment \
+            gitea-cli pr comment "$PR_NUMBER" \
               --repo $REPO \
-              --number $PR_NUMBER \
-              --base-url $GITEA_BASE_URL \
-              --token $GITEA_TOKEN \
               --body "$ANSIBLE_RESULT"
           fi
