@@ -59,7 +59,7 @@ jobs:
       - name: Run debug
         run: |
           echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
-          cat $GITHUB_OUTPUT
+          echo ">> $(cat $GITHUB_OUTPUT)"
 
   report:
     name: PR Report
