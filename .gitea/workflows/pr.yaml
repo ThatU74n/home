@@ -14,7 +14,8 @@ jobs:
     name: Register changes
     runs-on: infra
     outputs:
-      changes: ${{ steps.filters.outputs.filters }}
+      infrastructure: ${{ steps.filters.outputs.infrastructure }}
+      configuration: ${{ steps.filters.outputs.configuration }}
     steps:
       - name: Checkout code
         uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
@@ -29,7 +30,7 @@ jobs:
     name: Terraform Dry Run
     runs-on: infra
     needs: changes
-    if: contain(needs.changes.outputs.changes, 'infrastructure')
+    if: needs.changes.outputs.infrastructure == 'true'
     outputs:
       terraform_dry_run: ${{ steps.terraform_dry_run.outputs.terraform_dry_run }}
     steps:
@@ -44,7 +45,7 @@ jobs:
     name: Ansible Dry Run
     runs-on: infra
     needs: changes
-    if: contain(needs.changes.outputs.changes, 'configuration')
+    if: needs.changes.outputs.configuration == 'true'
     outputs:
       ansible_dry_run: ${{ steps.ansible_dry_run.outputs.ansible_dry_run }}
     steps:
@@ -88,7 +89,7 @@ jobs:
           fi 
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
-            gitea-cli pr comment "$PR_NUMBER" \
+            tea pr comment "$PR_NUMBER" \
               --repo $REPO \
               --body "$ANSIBLE_RESULT"
           fi
