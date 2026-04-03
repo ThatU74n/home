@@ -2,7 +2,7 @@
 - name: Configure Worker Nodes
   hosts: worker
   tasks:
-    - name: Reconfigure virtual machine
+    - name: Preconfigure virtual machine
       ansible.builtin.import_role:
         name: vm
 

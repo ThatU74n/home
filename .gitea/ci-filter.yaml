@@ -1,0 +1,4 @@
+infrastruture:
+  - infrastructure/**
+configuration:
+  - configuration/**
