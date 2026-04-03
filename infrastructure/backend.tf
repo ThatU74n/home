@@ -11,7 +11,6 @@ terraform {
     }
   }
   backend "s3" {
-    profile      = "personal"
     bucket       = "terraform-u74n"
     key          = "terraform.tfstate"
     region       = "ap-southeast-1"
@@ -22,8 +21,7 @@ terraform {
 }
 
 provider "aws" {
-  region  = "ap-southeast-1"
-  profile = "personal"
+  region = "ap-southeast-1"
 }
 
 provider "proxmox" {
