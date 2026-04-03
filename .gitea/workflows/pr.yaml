@@ -101,7 +101,10 @@ jobs:
           ping -c 4 192.168.1.51
           ping -c 4 192.168.1.61 
 
+
           cd configuration
+          ansible-inventory -i inventory/proxmox.yaml --vault-password-file=../vault_password.txt --list
+
           ansible control_plane -i inventory/proxmox.yaml --vault-password-file=../vault_password.txt -m ping 
           ansible control-plane-1 -i inventory/proxmox.yaml --vault-password-file=../vault_password.txt -m ping -u k-u74n
 
@@ -111,7 +114,6 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: "False"
         run: |
           cd configuration
-          ansible-inventory -i inventory/proxmox.yaml --vault-password-file=../vault_password.txt --list
           touch ansible_dry_run_output.txt
           ansible-playbook --vault-password-file=../vault_password.txt --check --diff playbooks/control_plane.yaml | tee ansible_dry_run_output.txt 
           echo "\n ---\n" >> ansible_dry_run_output.txt
