@@ -14,7 +14,7 @@ jobs:
     name: Terraform Dry Run
     runs-on: infra
     outputs:
-      terraform_dry_run: ${{ steps.terraform_dry_run.outputs.terraform_dry_run }}
+      terraform_dry_run: ${{ steps.terraform_dry_run.outputs.plan }}
     env:
       TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_USER }}!${{ secrets.PROXMOX_TOKEN_ID }}=${{ secrets.PROXMOX_TOKEN_SECRET }}
     steps:
@@ -61,7 +61,7 @@ jobs:
     name: Ansible Dry Run
     runs-on: infra
     outputs:
-      ansible_dry_run: ${{ steps.ansible_dry_run.outputs.ansible_dry_run }}
+      ansible_dry_run: ${{ steps.ansible_dry_run.outputs.plan }}
     env:
       PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
       PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
