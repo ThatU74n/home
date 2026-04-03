@@ -101,6 +101,7 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: "False"
         run: |
           cd configuration
+          ansible-inventory -i inventory/proxmox.yaml --list
           touch ansible_dry_run_output.txt
           ansible-playbook --vault-password-file=../vault_password.txt --check --diff playbooks/control_plane.yaml | tee ansible_dry_run_output.txt 
           echo "\n ---\n" >> ansible_dry_run_output.txt
