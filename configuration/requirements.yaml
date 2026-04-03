@@ -1,0 +1,11 @@
+collections:
+  - name: community.general
+    version: ">=12.5.0"
+  - name: community.docker
+    version: ">=5.1.0"
+  - name: community.hashi_vault
+    version: ">=5.0.0"
+  - name: community.proxmox
+    version: ">=1.6.0"
+  - name: community.postgresql
+    version: ">=4.2.0"
