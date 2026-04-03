@@ -53,7 +53,9 @@ jobs:
         id: terraform_dry_run
         run: |
           PLAN_OUTPUT=$(cat infrastructure/plan_output.txt)
-          echo "terraform_dry_run=$PLAN_OUTPUT" >> $GITHUB_OUTPUT
+          echo "plan<<EOF" >> $GITHUB_OUTPUT
+          cat infrastructure/plan_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
   ansible-dry-run:
     name: Ansible Dry Run
@@ -84,6 +86,11 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Install Ansible Collections
+        run: |
+          cd configuration
+          ansible-galaxy collection install -r requirements.yaml
+
       - name: Prepare Vault password file
         run: |
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > vault_password.txt
@@ -97,9 +104,10 @@ jobs:
           touch ansible_dry_run_output.txt
           ansible-playbook --vault-password-file=../vault_password.txt --check --diff playbooks/control_plane.yaml | tee ansible_dry_run_output.txt 
           echo "\n ---\n" >> ansible_dry_run_output.txt
-          ansible-playbook --vault-password-file=../vault_password.txt --check --diff playbooks/worker.yaml | tee -a ansible_dry_run_output.txt 
-          ANSIBLE_OUTPUT=$(cat ansible_dry_run_output.txt)
-          echo "ansible_dry_run=$ANSIBLE_OUTPUT" >> $GITHUB_OUTPUT
+          ansible-playbook --vault-password-file=../vault_password.txt --check --diff playbooks/worker.yaml | tee -a ansible_dry_run_output.txt
+          echo "plan<<EOF" >> $GITHUB_OUTPUT
+          cat ansible_dry_run_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
   report:
     name: PR Report
@@ -118,8 +126,8 @@ jobs:
           GITEA_SERVER_TOKEN: ${{ secrets.TOKEN }}
           REPO: utan/home
           PR_NUMBER: ${{ gitea.event.pull_request.number }}
-          TERRAFORM_RESULT: ${{ needs.terraform-dry-run.result == 'success' && needs.terraform-dry-run.outputs.terraform_dry_run || '' }}
-          ANSIBLE_RESULT: ${{ needs.ansible-dry-run.result == 'success' && needs.ansible-dry-run.outputs.ansible_dry_run || '' }}
+          TERRAFORM_RESULT: ${{ needs.terraform-dry-run.result == 'success' && needs.terraform-dry-run.outputs.terraform_dry_run }}
+          ANSIBLE_RESULT: ${{ needs.ansible-dry-run.result == 'success' && needs.ansible-dry-run.outputs.ansible_dry_run }}
         run: |
           echo "Targeting Repo: $REPO"
           echo "Targeting PR: $PR_NUMBER"
@@ -127,17 +135,30 @@ jobs:
           echo "Ansible Result: $ANSIBLE_RESULT"
 
           if [[ ! -z "$TERRAFORM_RESULT" ]]; then
+            BODY=$(jq -Rs . <<< "### Terraform Plan
+
+            \`\`\`
+            $TERRAFORM_RESULT
+            \`\`\`
+            ")  
             curl -s -X POST \
               -H "Authorization: token $GITEA_SERVER_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"body\": \"$TERRAFORM_RESULT\"}" \
+              -d "{\"body\": $BODY}" \
               "$GITEA_SERVER_URL/api/v1/repos/$REPO/issues/$PR_NUMBER/comments"
           fi
 
           if [[ ! -z "$ANSIBLE_RESULT" ]]; then
+            BODY=$(jq -Rs . <<< "### Ansible Dry Run
+
+            \`\`\`
+            $ANSIBLE_RESULT
+            \`\`\`
+            ")
+
             curl -s -X POST \
               -H "Authorization: token $GITEA_SERVER_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"body\": \"$ANSIBLE_RESULT\"}" \
+              -d "{\"body\": $BODY}" \
               "$GITEA_SERVER_URL/api/v1/repos/$REPO/issues/$PR_NUMBER/comments"
           fi

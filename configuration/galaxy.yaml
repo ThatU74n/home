@@ -11,6 +11,6 @@ dependencies:
   "community.docker": ">=5.1.0"
   "community.hashi_vault": ">=5.0.0"
   "community.proxmox": ">=1.6.0"
-  "comunity.postgresql": ">=4.2.0"
+  "community.postgresql": ">=4.2.0"
 
 repository: "https://github.com/ThatU74n/home"
