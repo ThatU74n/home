@@ -1,0 +1,6 @@
+---
+kubeProxyReplacement: "true"
+gatewayAPI:
+  enabled: "true"
+socketLB:
+  hostNamespaceOnly: "true"

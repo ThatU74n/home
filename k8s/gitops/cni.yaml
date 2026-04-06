@@ -2,10 +2,8 @@
 kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
-  name: tailscale
+  name: cni
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
@@ -15,21 +13,15 @@ spec:
       targetRevision: main
       ref: home
 
-    - repoURL: https://pkgs.tailscale.com/helmcharts
-      chart: tailscale-operator
-      targetRevision: 1.94.2
+    - repoURL: https://helm.cilium.io/
+      chart: cilium
+      targetRevision: 1.19.2
       helm:
         valueFiles:
-          - $home/k8s/deployments/tailscale/values.yaml
-
-    - repoURL: http://192.168.1.20:3000/utan/home.git
-      targetRevision: main
-      path: k8s/deployments/tailscale
-      directory:
-        recurse: true
+          - $home/k8s/deployments/cilium/values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: tailscale
+    namespace: kube-system
   syncPolicy:
     automated:
       enabled: true
