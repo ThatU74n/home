@@ -1,6 +1,7 @@
 ---
 - name: Configure Control Plane
   hosts: control_plane
+  serial: 1
   tasks:
     - name: Preconfigure virtual machine
       ansible.builtin.import_role:
@@ -17,3 +18,55 @@
     - name: Kubelet
       ansible.builtin.import_role:
         name: kubelet
+
+    # TODO: when configure HA cluster, swapout the ip to a HA Proxy
+    # If not, then all cluster will only listen to the first control plane node, ultimately become the single point of failure
+    - name: Check if the cluster is initialized
+      register: cluster_health
+      until: cluster_health.status == 200
+      retries: 3
+      delay: 10
+      failed_when: false
+      ansible.builtin.uri:
+        url: https://{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}:6443/healthz
+        validate_certs: false
+
+    - name: Initialize the cluster
+      when: cluster_health.status != 200
+      block:
+        - name: Kubeadm init
+          ansible.builtin.include_role:
+            name: kubeadm
+            tasks_from: init
+
+        - name: Helm
+          ansible.builtin.include_role:
+            name: helm
+
+        - name: Install CNI
+          changed_when: false
+          become: true
+          ansible.builtin.shell: |
+            helm repo add cilium https://helm.cilium.io/
+            helm repo update
+            helm install cilium cilium/cilium --namespace kube-system --set kubeProxyReplacement=true --set socketLB.hostNamespaceOnly=true
+
+        - name: Set join command fact
+          register: join_command
+          become: true
+          ansible.builtin.command: kubeadm token create --print-join-command
+
+    - name: Join the cluster
+      when: cluster_health.status == 200
+      block:
+        - name: Get join command from control plane
+          register: join_command
+          when: join_command is not defined
+          become: true
+          ansible.builtin.command: kubeadm token create --print-join-command
+          delegate_to: "{{ groups['control_plane'][0] }}"
+
+        - name: Join the cluster
+          ansible.builtin.include_role:
+            name: kubeadm
+            tasks_from: join

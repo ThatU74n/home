@@ -1,4 +1,6 @@
 ---
+- name: Check
+  ansible.builtin.import_tasks: check.yaml
 - name: Install
   ansible.builtin.import_tasks: install.yaml
 - name: Configure

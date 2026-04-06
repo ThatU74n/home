@@ -1,0 +1,5 @@
+---
+- name: Check Helm repository
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/helm.sources
+  register: helm_repository_check

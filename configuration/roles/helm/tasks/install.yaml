@@ -1,6 +1,62 @@
 ---
+- name: Install dependencies
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - curl
+      - gpg
+    state: present
+
+- name: Download Helm GPG key
+  become: true
+  when:
+    - not helm_repository_check.stat.exists
+    - ansible_facts['os_family'] == "Debian"
+  ansible.builtin.get_url:
+    url: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
+    dest: /etc/apt/keyrings/helm.asc
+    mode: "0644"
+
+- name: Dearmor Helm GPG key
+  become: true
+  when: not helm_repository_check.stat.exists
+  ansible.builtin.command: "gpg --dearmor -o /etc/apt/keyrings/helm.gpg /etc/apt/keyrings/helm.asc"
+  args:
+    creates: /etc/apt/keyrings/helm.gpg
+
+- name: Add Helm repository
+  become: true
+  when:
+    - not helm_repository_check.stat.exists
+    - ansible_facts['os_family'] == "Debian"
+  ansible.builtin.deb822_repository:
+    name: helm
+    types: deb
+    uris: https://packages.buildkite.com/helm-linux/helm-debian/any/
+    suites: any
+    components: main
+    signed_by: /etc/apt/keyrings/helm.gpg
+    state: present
+    enabled: true
+
+- name: Update apt cache
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install Helm
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.apt:
+    name: helm
+    state: present
+
 - name: Install Helm (MacOS)
   when: ansible_facts['os_family'] == "Darwin"
   community.general.homebrew:
     name: helm
     state: present
+
