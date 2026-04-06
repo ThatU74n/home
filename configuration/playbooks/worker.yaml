@@ -1,7 +1,19 @@
 ---
 - name: Configure Worker Nodes
   hosts: worker
+  gather_facts: false
   tasks:
+    - name: Wait for SSH
+      delegate_to: localhost
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 22
+        timeout: 300
+        delay: 10
+
+    - name: Gather facts
+      ansible.builtin.gather_facts:
+
     - name: Preconfigure virtual machine
       ansible.builtin.import_role:
         name: vm

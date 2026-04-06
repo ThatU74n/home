@@ -9,3 +9,5 @@ collections:
     version: ">=1.6.0"
   - name: community.postgresql
     version: ">=4.2.0"
+  - name: kubernetes.core
+    version: ">=6.3.0"
