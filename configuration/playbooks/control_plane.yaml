@@ -95,10 +95,13 @@
       block:
         - name: Get join command from control plane
           register: join_command
-          when: join_command is not defined
           become: true
           ansible.builtin.command: kubeadm token create --print-join-command
           delegate_to: "{{ groups['control_plane'][0] }}"
+
+        - name: Set join command fact
+          ansible.builtin.set_fact:
+            join_command: "{{ join_command.stdout }}"
 
         - name: Join the cluster
           ansible.builtin.include_role:

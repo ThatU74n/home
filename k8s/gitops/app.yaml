@@ -6,20 +6,29 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   project: default
-  source:
-    repoURL: "https://github.com/ThatU74n/home.git"
-    targetRevision: main
-    path: k8s/gitops/
-    directory:
-      recurse: true
+  sources:
+    - repoURL: "http://192.168.1.20:3000/utan/home.git"
+      targetRevision: main
+      path: k8s/gitops/
+      directory:
+        recurse: true
+    # CRD
+    - repoURL: "https://github.com/kubernetes-sigs/gateway-api"
+      targetRevision: release-1.4
+      path: config/crd/standard
+
   destination:
     server: "https://kubernetes.default.svc"
     namespace: default
   syncPolicy:
     automated:
+      enabled: true
       prune: true
       selfHeal: true
     syncOptions:
+      - ServerSideApply=true
       - CreateNamespace=true

@@ -15,6 +15,7 @@ spec:
     namespace: longhorn-system
   syncPolicy:
     automated:
+      enabled: false
       prune: true
       selfHeal: true
     syncOptions:
