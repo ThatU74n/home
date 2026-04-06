@@ -1,4 +1,55 @@
 ---
+- name: Install dependencies
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+    state: present
+
+- name: Download Kubernetes GPG key
+  become: true
+  when:
+    - not kubectl_kubernetes_repository_check.stat.exists
+    - ansible_facts['os_family'] == "Debian"
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes.asc
+    mode: "0644"
+
+- name: Dearmor Kubernetes GPG key
+  become: true
+  when:
+    - not kubectl_kubernetes_repository_check.stat.exists
+    - ansible_facts['os_family'] == "Debian"
+  ansible.builtin.command: "gpg --dearmor -o /etc/apt/keyrings/kubernetes.gpg /etc/apt/keyrings/kubernetes.asc"
+  args:
+    creates: /etc/apt/keyrings/kubernetes.gpg
+
+- name: Add Kubernetes repository
+  become: true
+  when:
+    - not kubectl_kubernetes_repository_check.stat.exists
+    - ansible_facts['os_family'] == "Debian"
+  register: kubeadm_add_kubernetes_repository
+  ansible.builtin.deb822_repository:
+    name: kubernetes
+    types: deb
+    uris: "https://pkgs.k8s.io/core:/stable:/v1.33/deb"
+    suites: /
+    signed_by: /etc/apt/keyrings/kubernetes.gpg
+    state: present
+    enabled: true
+
+- name: Update apt cache
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.apt:
+    update_cache: true
+
 - name: Install kubectl (Debian)
   when: ansible_facts['os_family'] == "Debian"
   become: true

@@ -1,0 +1,6 @@
+---
+- name: Check Kubernetes repository
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/kubernetes.sources
+  register: kubectl_kubernetes_repository_check

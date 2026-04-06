@@ -8,6 +8,9 @@ on:
       - synchronize
     branches:
       - main
+    paths:
+      - configuration/**
+      - infrastructure/**
 
 jobs:
   terraform-dry-run:
