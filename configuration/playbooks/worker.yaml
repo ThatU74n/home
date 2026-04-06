@@ -30,6 +30,9 @@
       ansible.builtin.import_role:
         name: kubelet
 
+    - name: Flush handler
+      ansible.builtin.meta: flush_handlers
+
     # TODO: when configure HA cluster, swapout the ip to a HA Proxy
     # If not, then all cluster will only listen to the first control plane node, ultimately become the single point of failure
     - name: Check if the cluster is initialized
