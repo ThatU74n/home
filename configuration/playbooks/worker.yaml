@@ -18,6 +18,10 @@
       ansible.builtin.import_role:
         name: vm
 
+    - name: Longhorn prerequisites
+      ansible.builtin.import_role:
+        name: longhorn
+
     - name: Containerd
       ansible.builtin.import_role:
         name: containerd
