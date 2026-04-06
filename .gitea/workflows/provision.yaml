@@ -13,6 +13,8 @@ jobs:
   provision:
     name: Provision Kubernetes Cluster
     runs-on: infra
+    env:
+      TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_USER }}!${{ secrets.PROXMOX_TOKEN_ID }}=${{ secrets.PROXMOX_TOKEN_SECRET }}
     steps:
       - name: Checkout code
         uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
@@ -48,6 +50,10 @@ jobs:
     name: Configure Kubernetes Control Plane
     runs-on: infra
     needs: provision
+    env:
+      PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
+      PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
+      PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
     steps:
       - name: Checkout code
         uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
@@ -84,6 +90,10 @@ jobs:
     name: Configure Kubernetes Worker
     runs-on: infra
     needs: provision
+    env:
+      PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
+      PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
+      PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
     steps:
       - name: Checkout code
         uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
@@ -123,6 +133,10 @@ jobs:
       - configure_control_plane
       - configure_worker
     if: needs.configure_control_plane.result == 'success' && needs.configure_worker.result == 'success'
+    env:
+      PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
+      PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
+      PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
     steps:
       - name: Checkout code
         uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
