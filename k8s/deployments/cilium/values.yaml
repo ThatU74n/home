@@ -1,6 +1,6 @@
 ---
-kubeProxyReplacement: "true"
+kubeProxyReplacement: true
 gatewayAPI:
-  enabled: "true"
+  enabled: true
 socketLB:
-  hostNamespaceOnly: "true"
+  hostNamespaceOnly: true
