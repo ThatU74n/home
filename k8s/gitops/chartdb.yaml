@@ -18,7 +18,7 @@ spec:
     namespace: chartdb
   syncPolicy:
     automated:
-      enabled: false
+      enabled: true
       prune: true
       selfHeal: true
     syncOptions:

@@ -12,19 +12,6 @@ spec:
       tailscale.com/hostname: "cilium-gw"
       tailscale.com/proxy-class: "stateful-proxy"
   listeners:
-    - name: https
-      protocol: HTTPS
-      port: 443
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - name: cilium-gw-tls
-            kind: Secret
-            group: ""
-      allowedRoutes:
-        namespaces:
-          from: All
-
     - name: http
       protocol: HTTP
       port: 80

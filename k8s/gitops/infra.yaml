@@ -19,7 +19,7 @@ spec:
     namespace: default
   syncPolicy:
     automated:
-      enabled: ture
+      enabled: true
       prune: true
       selfHeal: true
     syncOptions:

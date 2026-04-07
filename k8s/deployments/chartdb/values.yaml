@@ -7,4 +7,4 @@ service:
 gateway:
   name: cilium-gw
   namespace: infra
-  sectionName: https
+  sectionName: http
