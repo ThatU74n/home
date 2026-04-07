@@ -9,7 +9,6 @@ spec:
       app: {{ .Release.Name }}
   replicas: 1
   securityContext:
-    runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
   template:
@@ -23,6 +22,8 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
             capabilities:
               drop: ["ALL"]
           ports:

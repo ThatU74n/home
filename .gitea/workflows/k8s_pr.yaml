@@ -1,0 +1,26 @@
+---
+name: K8s Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+    paths:
+      - k8s/**
+      - .gitea/workflows/k8s_pr.yaml
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: infra
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 #v4
+
+      - name: Kube Linter
+        uses: stackrox/kube-linter-action@87802a2f4e01abebb3ee3c67a3002fea71f6eae5 #v1.0.7
+        with:
+          directory: k8s
