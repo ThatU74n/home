@@ -1,0 +1,9 @@
+---
+name: lgtm
+description: A Helm chart for deploying Loki, Grafana, Tempo, and Mimir
+apiVersion: v2
+appVersion: 1.0.0
+version: 1.0.0
+maintainers:
+  - name: Utan
+    email: utan.dev2358@gmail.com

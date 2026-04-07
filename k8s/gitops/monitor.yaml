@@ -2,20 +2,22 @@
 kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
-  name: chartdb
+  name: monitor
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   project: default
   source:
     repoURL: http://192.168.1.20:3000/utan/home.git
-    targetRevision: main
-    path: k8s/deployments/chartdb
+    targetRevision: monitor
+    path: k8s/deployments/lgtm
     helm:
       valueFiles:
         - values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: chartdb
+    namespace: monitor
   syncPolicy:
     automated:
       enabled: true
