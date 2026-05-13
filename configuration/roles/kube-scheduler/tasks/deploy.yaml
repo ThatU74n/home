@@ -1,0 +1,39 @@
+---
+# Stop other mode deployments
+- name: Stop Kube-scheduler systemd deployment 
+  become: true 
+  when:
+    - _mode != "systemd"
+    - "'kube-scheduler.service' in ansible_facts.services"
+    - ansible_facts.services['kube-scheduler.service']['state'] in ['running', 'active']
+  ansible.builtin.systemd:
+    name: kube-scheduler 
+    state: stopped
+
+- name: Stop Kube-scheduler static pod deployment 
+  become: true
+  when:
+    - _mode != "staticpod"
+  ansible.builtin.file:
+    name: "{{ kubernetes_static_pod_dir }}/scheduler.yaml"
+    state: absent
+
+# Start the deployment for the selected mode 
+- name: Start Kube-scheduler systemd deployment 
+  become: true 
+  when: _mode == "systemd"
+  ansible.builtin.systemd:
+    name: kube-scheduler 
+    state: started
+    enabled: true
+
+- name: Start Kube-scheduler static pod deployment 
+  become: true 
+  when: _mode == "staticpod"
+  ansible.builtin.template:
+    src: scheduler.yaml.jinja
+    dest: "{{ kubernetes_static_pod_dir }}/scheduler.yaml"
+    owner: root
+    group: root
+    mode: "0644"
+

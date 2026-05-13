@@ -1,0 +1,91 @@
+---
+# Ensure CA server exists
+- name: Assert Kubernetes CA server exists 
+  when:
+    - kubernetes_ca_key_content is not truthy or kubernetes_ca_cert_content is not truthy
+    - not _is_kubernetes_ca_server_in_inventory
+  ansible.builtin.fail:
+     msg: "CA server is required to retrieve CA certificate and key" 
+
+# Set Kubernetes CA certificate
+- name: Set Kubernetes CA certificate  
+  when: kubernetes_ca_cert_content is not truthy
+  delegate_to: "{{ kubernetes_ca_server }}"
+  become: true
+  run_once: true
+  block:
+    - name: Slurp Kubernetes CA certificate content
+      when: kubernetes_remote_ca_cert_stat.stat.exists
+      register: kubernetes_remote_ca_cert_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ kubernetes_remote_ca_cert_path }}"
+
+    - name: Set Kubernetes CA certificate content fact
+      when: kubernetes_remote_ca_cert_stat.stat.exists
+      ansible.builtin.set_fact:
+        kubernetes_ca_cert_content: "{{ kubernetes_remote_ca_cert_content_slurp.content | b64decode }}"
+  rescue:
+      - name: Fail if Kubernetes CA certificate is missing
+        ansible.builtin.fail:
+          msg: "Kubernetes CA certificate not found at {{ kubernetes_remote_ca_cert_path }}. Please generate the CA certificate or explicitly pass it as variable."
+
+# Set Kubernetes CA private key
+- name: Set Kubernetes CA private key 
+  when: kubernetes_ca_key_content is not truthy
+  delegate_to: "{{ kubernetes_ca_server }}"
+  become: true
+  run_once: true
+  block:
+    - name: Slurp Kubernetes CA private key content
+      when: kubernetes_remote_ca_key_stat.stat.exists
+      register: kubernetes_remote_ca_key_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ kubernetes_remote_ca_key_path }}"
+
+    - name: Set Kubernetes CA private key content fact 
+      when: kubernetes_remote_ca_key_stat.stat.exists
+      ansible.builtin.set_fact:
+        kubernetes_ca_key_content: "{{ kubernetes_remote_ca_key_content_slurp.content | b64decode }}"
+  rescue:
+      - name: Fail if Kubernetes CA private key is missing
+        ansible.builtin.fail:
+          msg: "Kubernetes CA private key not found at {{ kubernetes_remote_ca_key_path }}. Please generate the CA private key or explicitly pass it as variable."
+
+# Fetch Kube_scheduler checksum
+- name: Fetch Kube-scheduler checksum
+  when:
+    - _mode == "systemd"
+    - not kube_scheduler_checksum
+  block:
+    - name: Get Kube-scheduler checksum
+      changed_when: false
+      register: kube_scheduler_checksum_result
+      ansible.builtin.uri:
+        url: "https://dl.k8s.io/v{{ kubernetes_version }}/bin/linux/amd64/kube-scheduler.sha256"
+        return_content: true
+
+    - name: Set Kube-scheduler checksum fact
+      ansible.builtin.set_fact:
+        kube_scheduler_checksum: "{{ kube_scheduler_checksum_result.content }}"
+
+# Gather service facts
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+# Ensure kubernetes_installation_dir is correctly set 
+- name: Assert kubernetes_installation_dir is correctly set 
+  when: 
+    - _mode == 'systemd'
+    - _is_systemd_and_kubernetes_installation_dir_blank
+  ansible.builtin.fail:
+    msg: "kubernetes_installation_dir is required when deployment mode is systemd."
+
+# Ensure kubernetes_static_pod_dir is correctly set 
+- name: Assert kubernetes_static_pod_dir is correctly set 
+  when: 
+    - _mode == 'staticpod'
+    - _is_staticpod_and_kubernetes_static_pod_dir_blank
+  ansible.builtin.fail:
+    msg: "kubernetes_static_pod_dir is required when deployment mode is staticpod." 
+
+

@@ -1,7 +1,41 @@
 ---
-- name: Check
-  ansible.builtin.import_tasks: check.yaml
-- name: Preinstall
-  ansible.builtin.import_tasks: preinstall.yaml
-- name: Install
-  ansible.builtin.import_tasks: install.yaml
+- name: Preflight
+  ansible.builtin.import_tasks: preflight.yaml
+
+- name: Ensure Kubernetes directory 
+  become: true 
+  loop_control:
+    loop_var: kubernetes_directory
+  loop:
+    - "{{ kubernetes_pki_dir }}"
+    - /etc/systemd/system/kubelet.service.d
+  ansible.builtin.file:
+    path: "{{ kubernetes_directory }}"
+    state: directory
+    owner: root 
+    group: root 
+    mode: "0755"
+
+- name: Install (Debian)
+  when: ansible_facts['os_family'] == 'Debian'
+  ansible.builtin.import_tasks: install_debian.yaml
+
+- name: Install (RedHat)
+  when: ansible_facts['os_family'] == 'RedHat'
+  ansible.builtin.import_tasks: install_redhat.yaml
+
+- name: Configure PKI
+  ansible.builtin.import_tasks: pki.yaml
+
+- name: Configure
+  ansible.builtin.import_tasks: configure.yaml
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure kubelet is running
+  become: true
+  ansible.builtin.systemd:
+    name: kubelet
+    state: started
+    enabled: true

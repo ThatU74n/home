@@ -1,0 +1,43 @@
+---
+- name: Ensure Kubernetes directory
+  become: true 
+  ansible.builtin.file:
+    path: "{{ kubernetes_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop_control:
+    loop_var: kubernetes_dir
+  loop:
+    - "{{ kubernetes_installation_dir if _mode == 'systemd' else omit }}"     # Installation directory
+    - "{{ kubernetes_pki_dir }}"                                              # PKI directory
+    - "{{ kubernetes_static_pod_dir if _mode == 'staticpod' else omit }}"     # Static pod directory
+
+- name: Install dependencies
+  become: true
+  ansible.builtin.package:
+    name:
+      - "{{ 'python3-cryptography' if ansible_facts['os_family'] != 'ArchLinux' else 'python-cryptography' }}"
+    state: present
+
+- name: Download Kube-controller-manager binary
+  become: true
+  when: _mode == "systemd"
+  ansible.builtin.get_url:
+    url: "https://dl.k8s.io/v{{ kubernetes_version }}/bin/linux/amd64/kube-controller-manager"
+    dest: "{{ kubernetes_installation_dir }}/kube-controller-manager-{{ kubernetes_version }}"
+    checksum: "sha256:{{ kube_controller_manager_checksum }}"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Symlink Kube-controller-manager binary
+  become: true
+  when: _mode == "systemd"
+  ansible.builtin.file:
+    src: "{{ kubernetes_installation_dir }}/kube-controller-manager-{{ kubernetes_version }}"
+    dest: /usr/local/bin/kube-controller-manager
+    state: link
+  notify:
+    - Restart Kube-controller-manager

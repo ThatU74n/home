@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: U74n
+  description: Install and configure kube-apiserver cluster
+  min_ansible_version: 2.20
+  platforms:
+    - name: Debian
+      versions:
+        - 13        - Trixie
+        # TODO: Test systemd
+        - 12        - Bookworm
+    - name: CentOS
+      versions:
+        - stream 10 - Coughlan

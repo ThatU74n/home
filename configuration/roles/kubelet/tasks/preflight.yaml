@@ -1,0 +1,61 @@
+---
+- name: Check swap
+  become: true
+  ansible.builtin.command: swapon --show
+  register: kubelet_swap_check
+  changed_when: false
+  failed_when: false
+
+- name: Assert that swap is turned off
+  become: true
+  ansible.builtin.assert:
+    that:
+      - kubelet_swap_check.stdout == ''
+    fail_msg: "Swap is enabled. Please turn off swap to ensure Kubernetes functions properly."
+
+# Ensure CA servers exists
+- name: Assert Kubernetes CA server exists
+  when:
+    - kubernetes_ca_key_content is not truthy or kubernetes_ca_cert_content is not truthy
+    - not _is_kubernetes_ca_server_in_inventory
+  ansible.builtin.fail:
+     msg: "CA server is required to retrieve CA certificate and key"
+
+# Set Kubernetes CA certificate
+- name: Set Kubernetes CA certificate
+  delegate_to: "{{ kubernetes_ca_server }}"
+  when: kubernetes_ca_cert_content is not truthy
+  become: true
+  block:
+    - name: Slurp Kubernetes CA certificate content
+      register: kubernetes_remote_ca_cert_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ kubernetes_remote_ca_cert_path }}"
+
+    - name: Set Kubernetes CA certificate content fact
+      ansible.builtin.set_fact:
+        kubernetes_ca_cert_content: "{{ kubernetes_remote_ca_cert_content_slurp.content | b64decode }}"
+  rescue:
+      - name: Fail if Kubernetes CA certificate is missing
+        ansible.builtin.fail:
+          msg: "Kubernetes CA certificate not found at {{ kubernetes_remote_ca_cert_path }}. Please generate the CA certificate or explicitly pass it as variable."
+
+# Set Kubernetes CA key
+- name: Set Kubernetes CA private key
+  delegate_to: "{{ kubernetes_ca_server }}"
+  when: kubernetes_ca_key_content is not truthy
+  become: true
+  block:
+    - name: Slurp Kubernetes CA private key content
+      register: kubernetes_remote_ca_key_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ kubernetes_remote_ca_key_path }}"
+
+    - name: Set Kubernetes CA private key content fact 
+      ansible.builtin.set_fact:
+        kubernetes_ca_key_content: "{{ kubernetes_remote_ca_key_content_slurp.content | b64decode }}"
+  rescue:
+      - name: Fail if Kubernetes CA private key is missing
+        ansible.builtin.fail:
+          msg: "Kubernetes CA private key not found at {{ kubernetes_remote_ca_key_path }}. Please generate the CA private key or explicitly pass it as variable."
+

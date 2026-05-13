@@ -1,7 +1,0 @@
----
-- name: Copy cgroup configuration
-  when: "'control_plane' in group_names"
-  ansible.builtin.copy:
-    src: kubeadm-config.yaml
-    dest: "{{ ansible_facts['env']['HOME'] }}/kubeadm-config.yaml"
-    mode: "0600"

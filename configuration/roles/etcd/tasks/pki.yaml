@@ -1,0 +1,69 @@
+---
+# Fetch CA cert 
+- name: Write Etcd CA 
+  become: true
+  no_log: true
+  ansible.builtin.copy:
+    dest: "{{ etcd_pki_dir }}/ca.crt"
+    content: "{{ etcd_ca_cert_content }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Generate server key
+  become: true
+  register: etcd_key 
+  community.crypto.openssl_privatekey:
+    path: "{{ etcd_pki_dir }}/server.key"
+    size: 2048
+
+- name: Generate CSR for Etcd
+  become: true
+  register: etcd_csr
+  changed_when: etcd_key.changed 
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ etcd_pki_dir }}/server.key"
+    common_name: "etcd"
+    subject_alt_name:
+      - "IP:{{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }}"
+      - "IP:127.0.0.1"
+      - "DNS:{{ inventory_hostname }}"
+      - "DNS:localhost"
+
+- name: Sign server certificate
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ etcd_pki_dir }}/server.crt"
+    csr_content: "{{ etcd_csr.csr }}"
+    provider: ownca
+    ownca_content: "{{ etcd_ca_cert_content }}" 
+    ownca_privatekey_content: "{{ etcd_ca_key_content }}"
+
+- name: Generate Etcd peer key
+  become: true
+  register: etcd_peer_key
+  community.crypto.openssl_privatekey:
+    path: "{{ etcd_pki_dir }}/peer.key"
+    size: 2048
+
+- name: Generate CSR for Etcd peer
+  become: true
+  register: etcd_peer_csr
+  changed_when: etcd_peer_key.changed
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ etcd_pki_dir }}/peer.key"
+    common_name: "{{ inventory_hostname }}-etcd"
+    subject_alt_name:
+      - "IP:{{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }}"
+      - "IP:127.0.0.1"
+      - "DNS:{{ inventory_hostname }}"
+      - "DNS:localhost"
+
+- name: Sign Etcd peer certificate
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ etcd_pki_dir }}/peer.crt"
+    csr_content: "{{ etcd_peer_csr.csr }}"
+    provider: ownca
+    ownca_content: "{{ etcd_ca_cert_content }}" 
+    ownca_privatekey_content: "{{ etcd_ca_key_content }}"

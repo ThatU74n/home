@@ -1,0 +1,63 @@
+---
+argument_specs:
+  main:
+    description: Install and configure Kubelet
+    short_description: Install and configure Kubelet
+    author:
+      - U74n
+    options:
+      kubernetes_version:
+        type: str 
+        description:
+          - "Kubernetes version of Kubelet to install"
+          - "It's recommended to use the same version as the other components in the cluster"
+        required: true
+
+      kubernetes_static_pod_dir:
+        type: str 
+        description:
+          - "Directory of Kubernetes static pods manifests"
+          - "Default: /etc/kubernetes/manifests"
+        required: false
+        default: /etc/kubernetes/manifests
+
+      kubernetes_pki_dir:
+        type: str
+        description:
+          - "Directory of Kubernetes PKI files"
+          - "Default: /etc/kubernetes/pki"
+        required: false
+        default: /etc/kubernetes/pki
+
+      kubernetes_ca_key_content:
+        type: str
+        description:
+          - "Kubernetes CA key content"
+          - "Default: blank"
+          - "If not provided, It will generate a new CA key and certificate"
+        required: false
+
+      kubernetes_ca_cert_content:
+        type: str
+        description:
+          - "Kubernetes CA certificate content"
+          - "Default: blank"
+          - "If not provided, It will generate a new CA key and certificate"
+        required: false
+
+      kubernetes_ca_server:
+        type: str 
+        required: false
+        default: "{{ groups['control_plane'] | sort | first }}"
+
+      kubernetes_remote_ca_key_path:
+        type: path 
+        required: false
+        default: "/etc/kubernetes/pki/ca.key"
+
+      kubernetes_remote_ca_cert_path:
+        type: path 
+        required: false 
+        default: "/etc/kubernetes/pki/ca.crt"
+
+

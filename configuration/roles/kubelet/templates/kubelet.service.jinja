@@ -1,0 +1,12 @@
+[Unit]
+After=kube-apiserver.service
+
+[Service]
+ExecStart=
+ExecStart=/usr/bin/kubelet \
+  --config=/etc/kubernetes/kubelet-config.yaml \
+  --kubeconfig=/etc/kubernetes/kubelet.conf \
+  --container-runtime-endpoint=unix:///run/containerd/containerd.sock \
+  --node-ip={{ hostvars[inventory_hostname]['ansible_host'] }} \
+  --hostname-override={{ inventory_hostname }} \
+  

@@ -1,0 +1,56 @@
+---
+- name: Install dependencies
+  become: true
+  ansible.builtin.package:
+    name:
+      - tar
+      - "{{ 'python3-cryptography' if ansible_facts['os_family'] != 'ArchLinux' else 'python-cryptography' }}"
+    state: present
+
+- name: Ensure Etcd directories 
+  become: true 
+  ansible.builtin.file:
+    path: "{{ etcd_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop_control:
+    loop_var: etcd_dir
+  loop:
+    - "{{ etcd_installation_dir if _mode == 'systemd' else omit }}"         # Installation directory 
+    - "{{ etcd_pki_dir }}"                                                  # PKI directory 
+    - "{{ kubernetes_static_pod_dir if _mode == 'staticpod' else omit }}"   # Static pod directory
+
+- name: Download Etcd binaries
+  become: true
+  register: etcd_archive
+  when: _mode == "systemd"
+  ansible.builtin.get_url:
+    url: "{{ etcd_download_url }}/v{{ etcd_version }}/etcd-v{{ etcd_version }}-linux-amd64.tar.gz"
+    dest: "{{ etcd_installation_dir }}/etcd-v{{ etcd_version }}.tar.gz"
+    mode: "0755"
+
+- name: Extract Etcd binaries
+  become: true
+  when:
+    - etcd_archive.changed
+    - _mode == "systemd"
+  ansible.builtin.unarchive:
+    src: "{{ etcd_installation_dir }}/etcd-v{{ etcd_version }}.tar.gz"
+    dest: "{{ etcd_installation_dir }}"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+
+- name: Symlink Etcd binaries
+  become: true
+  when: _mode == "systemd"
+  ansible.builtin.file:
+    src: "{{ etcd_installation_dir }}/{{ item }}"
+    dest: /usr/local/bin/{{ item }}
+    state: link
+    force: true
+  loop:
+    - etcd
+    - etcdctl

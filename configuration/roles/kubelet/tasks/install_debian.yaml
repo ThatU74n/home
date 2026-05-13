@@ -1,0 +1,45 @@
+---
+- name: Install dependencies
+  become: true
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+    state: present
+
+- name: Download Kubernetes GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}/deb/Release.key"
+    dest: "/etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.asc"
+    mode: "0644"
+
+- name: Dearmor Kubernetes GPG key
+  become: true
+  ansible.builtin.command:
+    cmd: "gpg --dearmor -o /etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.gpg /etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.asc"
+    creates: "/etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.gpg"
+
+- name: Add Kubernetes repository
+  become: true
+  notify: Update apt cache
+  ansible.builtin.deb822_repository:
+    name: kubernetes
+    types: deb
+    uris: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}/deb"
+    suites: /
+    signed_by: "/etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.gpg"
+    state: present
+    enabled: true
+
+- name: Flush handler
+  ansible.builtin.meta: flush_handlers
+
+- name: Install Kubelet
+  become: true
+  ansible.builtin.apt:
+    name: kubelet
+    allow_downgrade: true
+    state: present

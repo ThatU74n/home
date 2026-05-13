@@ -1,0 +1,32 @@
+[Unit]
+Description=etcd
+Documentation=https://github.com/coreos/etcd
+After=network.target
+Wants=network-online.target
+
+[Service]
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+RestartSec=5s
+ExecStart=/usr/local/bin/etcd \
+  --name={{ inventory_hostname }} \
+  --data-dir=/var/lib/etcd \
+  --listen-client-urls=https://{{ _etcd_private_ip_address }}:2379,https://127.0.0.1:2379 \
+  --advertise-client-urls=https://{{ _etcd_advertise_server_address }}:2379 \
+  --listen-peer-urls=https://{{ _etcd_private_ip_address }}:2380 \
+  --initial-advertise-peer-urls=https://{{ _etcd_advertise_peer_address }}:2380 \
+  --initial-cluster={% for host in groups['control_plane'] | sort %}{{ host }}=https://{{ hostvars[host]['ansible_host'] }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
+  --initial-cluster-token=etcd-cluster-1 \
+  --initial-cluster-state={{ 'existing' if etcd_exist else 'new' }} \
+  --cert-file={{ etcd_pki_dir }}/server.crt \
+  --key-file={{ etcd_pki_dir }}/server.key \
+  --trusted-ca-file={{ etcd_pki_dir }}/ca.crt \
+  --client-cert-auth=true \
+  --peer-cert-file={{ etcd_pki_dir }}/peer.crt \
+  --peer-key-file={{ etcd_pki_dir }}/peer.key \
+  --peer-trusted-ca-file={{ etcd_pki_dir }}/ca.crt \
+  --peer-client-cert-auth=true
+
+[Install]
+WantedBy=multi-user.target 

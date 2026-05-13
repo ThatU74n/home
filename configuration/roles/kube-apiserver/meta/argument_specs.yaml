@@ -1,0 +1,151 @@
+---
+argument_specs:
+  main: 
+    description: Install and configure Kube-apiserver
+    short_description: Install and configure Kube-apiserver
+    author:
+      - U74n 
+    options:
+      # Version 
+      kubernetes_version:
+        type: str 
+        description: 
+          - "Kubernetes version of Kube-apiserver to install"
+          - "It's recommended to use the same version as the other components in the Kubernetes cluster"
+        required: true
+
+      kube_apiserver_checksum:
+        type: str 
+        description: 
+          - "SHA256 checksum of Kube-apiserver binary for verification"
+          - "Default: if not provided, it will attempt to fetch the checksum from the kubernetes release page"
+        required: false
+
+      kube_apiserver_mode:
+        type: str 
+        description: 
+          - "Deployment mode for Kube-apiserver"
+          - "Default: staticpod"
+        choices:
+          - systemd          
+          - systemd-service
+          - systemd_service
+          - binary
+          - staticpod 
+          - static-pod
+          - static_pod
+          - kubelet
+        required: false
+        default: staticpod
+
+      # Paths
+      kubernetes_installation_dir:
+        type: path 
+        description: 
+          - "Directory to install Kube-apiserver binary when deploying as systemd service"
+          - "Default: /usr/local/kuneretes"
+        required: false 
+        default: /usr/local/kubernetes 
+
+      kubernetes_static_pod_dir:
+        type: path
+        description: 
+          - "Directory to store Kube-apiserver static pod manifest when deploying as static pod"
+          - "Default: /etc/kubernetes/manifests"
+        required: false
+        default: /etc/kubernetes/manifests
+
+      kubernetes_pki_dir:
+        type: path 
+        description:
+          - "Directory to store Kube-apiserver PKI files. Include"
+          - "Server certificate - server key"
+          - "Etcd client certificate - etcd client key"
+          - "Kubelet client certificate - kubelet client key"
+          - "Service account public key - service account private key"
+          - "Front proxy client certificate - front proxy client key"
+          - "Default: /etc/kubernetes/pki"
+        required: false
+        default: /etc/kubernetes/pki 
+
+      etcd_pki_dir:
+        type: path 
+        description:
+          - "Directory to store etcd PKI files"
+          - "Default: /etc/etcd/pki"
+        required: false
+        default: /etc/etcd/pki
+
+      # Network
+
+      # PKI 
+      kubernetes_ca_cert_content:
+        type: str 
+        description:
+          - "Kubernetes CA certifcate content"
+          - "If not specified, it will slurp the CA certificate from the CA server"
+        required: false
+
+      kubernetes_ca_key_content:
+        type: str 
+        description:
+          - "Kubernetes CA key content"
+          - "If not specified, it will slurp the CA key from the CA server"
+        required: false
+
+      etcd_ca_cert_content:
+        type: str 
+        description:
+          - "Etcd CA certifcate content"
+          - "If not specified, it will slurp the CA certificate from the CA server"
+        required: false
+
+        etcd_ca_key_content:
+          type: str 
+          description:
+            - "Etcd CA key content"
+            - "If not specified, it will slurp the CA key from the CA server"
+          required: false
+
+      kubernetes_ca_server:
+        type: str 
+        required: false 
+        default: "{{ groups['control_plane'] | sort | first }}"
+
+      kubernetes_remote_ca_cert_path:
+        type: path 
+        required: false 
+        default: "/etc/kubernetes/pki/ca.crt"
+
+      kubernetes_remote_ca_key_path:
+        type: path 
+        required: false
+        default: "/etc/kubernetes/pki/ca.key"
+
+      etcd_ca_server:
+        type: str 
+        required: false 
+        default: "{{ groups['control_plane'] | sort | first }}"
+
+      etcd_remote_ca_cert_path:
+        type: path 
+        required: false
+        default: "/etc/etcd/pki/ca.crt"
+
+      etcd_remote_ca_key_path:
+        type: path 
+        required: false
+        default: "/etc/etcd/pki/ca.key"
+
+      # Other 
+      kube_apiserver_storage_backend:
+        type: str 
+        description: 
+          - "Storage backend for Kube-apiserver"
+          - "Default: etcd3"
+        choices:
+          - etcd2
+          - etcd3
+        required: false
+        default: etcd3
+

@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: etcd
+  namespace: kube-system
+  labels:
+    node-role.kubernetes.io/control-plane: "true"
+    component: etcd
+spec:
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  containers:
+    - name: etcd 
+      image: quay.io/coreos/etcd:v{{ etcd_version }}
+      command:
+        - etcd 
+        - --name={{ inventory_hostname }}
+        - --data-dir=/var/lib/etcd 
+        - --listen-client-urls=https://{{ _etcd_private_ip_address }}:2379,https://127.0.0.1:2379
+        - --advertise-client-urls=https://{{ _etcd_advertise_server_address }}:2379
+        - --listen-peer-urls=https://{{ _etcd_private_ip_address }}:2380
+        - --initial-advertise-peer-urls=https://{{ _etcd_advertise_peer_address }}:2380
+        - --listen-metrics-urls=http://127.0.0.1:2381
+        - --initial-cluster={% for host in groups['control_plane'] | sort %}{{ host }}=https://{{ hostvars[host]['ansible_host'] }}:2380{% if not loop.last %},{% endif %}{% endfor %}
+
+        - --initial-cluster-token=etcd-cluster-1
+        - --initial-cluster-state={{ 'existing' if etcd_exist else 'new' }}
+        - --cert-file=/etc/etcd/pki/server.crt
+        - --key-file=/etc/etcd/pki/server.key
+        - --trusted-ca-file=/etc/etcd/pki/ca.crt
+        - --client-cert-auth=true
+        - --peer-cert-file=/etc/etcd/pki/peer.crt
+        - --peer-key-file=/etc/etcd/pki/peer.key
+        - --peer-trusted-ca-file=/etc/etcd/pki/ca.crt
+        - --peer-client-cert-auth=true
+      ports:
+        - containerPort: 2379
+          name: server
+        - containerPort: 2380
+          name: peer 
+        - containerPort: 2381
+          name: metrics
+      volumeMounts:
+        - name: etcd-data
+          mountPath: /var/lib/etcd
+        - name: etcd-pki
+          mountPath: /etc/etcd/pki
+          readOnly: true
+  volumes:
+    - name: etcd-data 
+      hostPath:
+        path: /var/lib/etcd 
+        type: DirectoryOrCreate
+    - name: etcd-pki 
+      hostPath:
+        path: {{ etcd_pki_dir }}
+        type: Directory
+
+

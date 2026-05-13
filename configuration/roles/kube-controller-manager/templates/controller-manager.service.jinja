@@ -1,0 +1,26 @@
+[Unit]
+Description=Kubernetes Controller Manager
+Documentation=https://github.com/kubernetes/kubernetes
+After=network.target
+
+[Service]
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+RestartSec=5
+ExecStart=kube-controller-manager \
+    --bind-address=0.0.0.0 \
+    --cluster-cidr=10.0.0.0/8 \
+    --cluster-name=kubernetes \
+    --service-cluster-ip-range=10.32.0.0/24 \
+    --use-service-account-credentials=true \
+    --leader-elect=true \
+    --kubeconfig=/etc/kubernetes/controller-manager.conf \
+    --cluster-signing-cert-file={{ kubernetes_pki_dir }}/ca.crt \
+    --cluster-signing-key-file={{ kubernetes_pki_dir }}/ca.key \
+    --root-ca-file={{ kubernetes_pki_dir }}/ca.crt \
+    --service-account-private-key-file={{ kubernetes_pki_dir }}/service-account.key \
+    --v=2
+
+[Install]
+WantedBy=multi-user.target
