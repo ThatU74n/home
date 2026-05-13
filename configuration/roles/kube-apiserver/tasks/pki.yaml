@@ -1,0 +1,121 @@
+---
+# Fetch CA cert 
+- name: Write CAs 
+  become: true
+  no_log: true
+  loop_control:
+    loop_var: ca_item
+  loop:
+    - dest: "{{ kubernetes_pki_dir }}/ca.crt"
+      content: "{{ kubernetes_ca_cert_content }}"
+    - dest: "{{ etcd_pki_dir }}/ca.crt"
+      content: "{{ etcd_ca_cert_content }}"
+  ansible.builtin.copy:
+    dest: "{{ ca_item.dest }}"
+    content: "{{ ca_item.content }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+# Kube apiserver key - cert 
+- name: Generate Kube-apiserver key
+  become: true
+  register: apiserver_key
+  community.crypto.openssl_privatekey:
+    path: "{{ kubernetes_pki_dir }}/apiserver.key"
+    size: 2048
+
+- name: Generate CSR for Kube-apiserver
+  become: true
+  register: apiserver_csr
+  changed_when: apiserver_key.changed
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ kubernetes_pki_dir }}/apiserver.key"
+    common_name: system:kube-apiserver
+    subject_alt_name:
+      - "IP:{{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }}"
+      - "IP:127.0.0.1"
+      - "IP:10.32.0.1"
+      - "DNS:{{ inventory_hostname }}"
+      - "DNS:localhost"
+      - "DNS:kubernetes"
+      - "DNS:kubernetes.default"
+      - "DNS:kubernetes.default.svc"
+      - "DNS:kubernetes.default.svc.cluster"
+      - "DNS:kubernetes.default.svc.cluster.local"
+
+- name: Sign Kube-apiserver certificate
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ kubernetes_pki_dir }}/apiserver.crt"
+    csr_content: "{{ apiserver_csr.csr }}"
+    provider: ownca
+    ownca_content: "{{ kubernetes_ca_cert_content }}"
+    ownca_privatekey_content: "{{ kubernetes_ca_key_content }}"
+
+# Kube apiserver - Etcd key - cert
+- name: Generate Etcd client key
+  become: true
+  register: apiserver_etcd_client_key
+  community.crypto.openssl_privatekey:
+    path: "{{ kubernetes_pki_dir }}/apiserver-etcd-client.key"
+    size: 2048
+
+- name: Generate CSR for Etcd client
+  become: true
+  register: apiserver_etcd_client_csr
+  changed_when: apiserver_etcd_client_key.changed
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ kubernetes_pki_dir }}/apiserver-etcd-client.key"
+    common_name: "kube-apiserver-etcd-client"
+
+- name: Sign Etcd client certificate
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ kubernetes_pki_dir }}/apiserver-etcd-client.crt"
+    csr_content: "{{ apiserver_etcd_client_csr.csr }}"
+    provider: ownca
+    ownca_content: "{{ etcd_ca_cert_content }}"
+    ownca_privatekey_content: "{{ etcd_ca_key_content }}"
+
+# Kube apiserver - Kubelet key - cert    
+- name: Generate Kubelet client key
+  become: true
+  register: apiserver_kubelet_client_key
+  community.crypto.openssl_privatekey:
+    path: "{{ kubernetes_pki_dir }}/apiserver-kubelet-client.key"
+    size: 2048
+
+- name: Generate CSR for Kubelet client
+  become: true
+  register: apiserver_kubelet_client_csr
+  changed_when: apiserver_kubelet_client_key.changed 
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ kubernetes_pki_dir }}/apiserver-kubelet-client.key"
+    common_name: "kube-apiserver-kubelet-client"
+    organization_name: "system:masters"
+
+- name: Sign Kubelet client certificate
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ kubernetes_pki_dir }}/apiserver-kubelet-client.crt"
+    csr_content: "{{ apiserver_kubelet_client_csr.csr }}"
+    provider: ownca
+    ownca_content: "{{ kubernetes_ca_cert_content }}"
+    ownca_privatekey_content: "{{ kubernetes_ca_key_content }}"
+
+# Front proxy client key - cert
+
+# Service account key - cert 
+- name: Generate Service account key
+  become: true
+  community.crypto.openssl_privatekey:
+    path: "{{ kubernetes_pki_dir }}/service-account.key"
+    size: 2048
+
+- name: Generate Service account public key
+  become: true
+  community.crypto.openssl_publickey:
+    path: "{{ kubernetes_pki_dir }}/service-account.pub"
+    privatekey_path: "{{ kubernetes_pki_dir }}/service-account.key"
+

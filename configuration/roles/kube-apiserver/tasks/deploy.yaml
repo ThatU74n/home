@@ -1,0 +1,38 @@
+---
+# Stop other mode deployments
+- name: Stop Kube-apiserver systemd deployment
+  become: true 
+  when:
+    - _mode != "systemd"
+    - "'kube-apiserver.service' in ansible_facts.services"
+    - ansible_facts.services['kube-apiserver.service']['state'] in ['running', 'active']
+  ansible.builtin.systemd:
+    name: kube-apiserver 
+    state: stopped
+  
+- name: Stop Kube-apiserver static pod deployment
+  become: true
+  when:
+    - _mode != "staticpod"
+  ansible.builtin.file:
+    name: "{{ kubernetes_static_pod_dir }}/kube-apiserver.yaml"
+    state: absent
+
+# Start the deployment for the selected mode
+- name: Start Kube-apiserver systemd deployment
+  become: true 
+  when: _mode == "systemd"
+  ansible.builtin.systemd:
+    name: kube-apiserver 
+    state: started
+    enabled: true
+
+- name: Start Kube-apiserver static pod deployment
+  become: true
+  when: _mode == "staticpod"
+  ansible.builtin.template:
+    src: kube-apiserver.yaml.jinja
+    dest: "{{ kubernetes_static_pod_dir }}/kube-apiserver.yaml"
+    owner: root
+    group: root
+    mode: "0644"

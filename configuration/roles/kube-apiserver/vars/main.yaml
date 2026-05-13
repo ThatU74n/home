@@ -1,0 +1,14 @@
+---
+_mode_map:
+  staticpod: ["staticpod", "static-pod", "static_pod", "kubelet"]
+  systemd: ["systemd", "systemd-service", "systemd_service", "binary"]
+
+_mode: "{{ _mode_map | dict2items | selectattr('value', 'contains', kube_apiserver_mode) | map(attribute='key') | first }}"
+
+_is_systemd_and_kubernetes_installation_dir_blank: "{{ _mode == 'systemd' and (kubernetes_installation_dir is not truthy)}}"
+_is_staticpod_and_kubernetes_static_pod_dir_blank: "{{ _mode == 'staticpod' and (kubernetes_static_pod_dir is not truthy)}}"
+_is_kubernetes_ca_server_in_inventory: "{{ kubernetes_ca_server in groups['all'] }}"
+_is_etcd_ca_server_in_inventory: "{{ etcd_ca_server in groups['all'] }}"
+
+
+

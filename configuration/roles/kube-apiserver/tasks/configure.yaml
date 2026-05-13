@@ -1,0 +1,23 @@
+---
+- name: Copy configuration template
+  become: true
+  when: _mode == "systemd"
+  ansible.builtin.template:
+    src: kube-apiserver.service.jinja
+    dest: /etc/systemd/system/kube-apiserver.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart Kube-apiserver
+
+- name: Copy encryption configuration 
+  become: true
+  ansible.builtin.template:
+    src: encryption-config.yaml.jinja
+    dest: "/etc/kubernetes/encryption-config.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+
