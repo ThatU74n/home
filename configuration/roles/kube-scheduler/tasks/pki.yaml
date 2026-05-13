@@ -1,0 +1,26 @@
+---
+# Kube scheduler key & cert
+- name: Generate Kube-scheduler certificate
+  become: true
+  register: scheduler_key
+  community.crypto.openssl_privatekey:
+    path: "{{ kubernetes_pki_dir }}/scheduler.key"
+    size: 2048
+
+- name: Generate CSR for Kube-scheduler
+  become: true
+  register: scheduler_csr
+  changed_when: scheduler_key.changed 
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ kubernetes_pki_dir }}/scheduler.key"
+    common_name: system:kube-scheduler
+
+- name: Sign Kube-scheduler certificate
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ kubernetes_pki_dir }}/scheduler.crt"
+    csr_content: "{{ scheduler_csr.csr }}"
+    provider: ownca
+    ownca_content: "{{ kubernetes_ca_cert_content }}"
+    ownca_privatekey_content: "{{ kubernetes_ca_key_content }}"
+

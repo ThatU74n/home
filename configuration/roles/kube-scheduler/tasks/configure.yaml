@@ -1,0 +1,38 @@
+---
+# Slurp key cert for kubeconfig template
+- name: Slurp scheduler key
+  become: true
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_dir }}/scheduler.key"
+  register: kube_scheduler_key
+
+- name: Slurp scheduler certificate
+  become: true
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_dir }}/scheduler.crt"
+  register: kube_scheduler_cert
+
+# Copy configs
+- name: Write scheduler kubeconfig
+  become: true
+  ansible.builtin.template:
+    src: scheduler.conf.jinja
+    dest: /etc/kubernetes/scheduler.conf
+    owner: root
+    group: root
+    mode: "0600"
+  notify:
+    - Restart Kube-scheduler
+
+- name: Copy service template
+  become: true
+  when: _mode == "systemd"
+  ansible.builtin.template:
+    src: scheduler.service.jinja
+    dest: /etc/systemd/system/kube-scheduler.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart Kube-scheduler
