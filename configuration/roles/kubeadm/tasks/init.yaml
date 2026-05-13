@@ -1,7 +1,0 @@
----
-- name: Init
-  become: true
-  ansible.builtin.command:
-    cmd: kubeadm init --config {{ ansible_facts['env']['HOME'] }}/kubeadm-config.yaml
-  args:
-    creates: /etc/kubernetes/admin.conf

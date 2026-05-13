@@ -1,0 +1,46 @@
+---
+- name: Slurp kubelet key
+  become: true
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_dir }}/kubelet.key"
+  register: kubelet_key
+
+- name: Slurp kubelet certificate
+  become: true
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_dir }}/kubelet.crt"
+  register: kubelet_cert
+
+- name: Copy Kubeconfig
+  become: true
+  ansible.builtin.template:
+    src: kubelet.conf.jinja
+    dest: "/etc/kubernetes/kubelet.conf"
+    owner: root
+    group: root
+    mode: "0600"
+  notify:
+    - Restart Kubelet
+
+- name: Copy Kubelet config
+  become: true
+  ansible.builtin.template:
+    src: kubelet-config.yaml.jinja
+    dest: /etc/kubernetes/kubelet-config.yaml
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Restart Kubelet
+
+- name: Copy Kubelet service drop-in
+  become: true
+  ansible.builtin.template:
+    src: kubelet.service.jinja
+    dest: /etc/systemd/system/kubelet.service.d/10-kubelet.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart Kubelet

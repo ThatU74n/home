@@ -1,0 +1,4 @@
+---
+_kubernetes_minor_version: "{{ kubernetes_version.split('.')[0:2] | join('.') }}"
+
+_is_kubernetes_ca_server_in_inventory: "{{ kubernetes_ca_server in groups['all'] }}"

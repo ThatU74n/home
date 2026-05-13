@@ -1,0 +1,8 @@
+---
+#
+kubernetes_version: 1.35.4
+kubernetes_pki_dir: /etc/kubernetes/pki
+kubernetes_static_pod_dir: /etc/kubernetes/manifests
+kubernetes_ca_key_content: 
+kubernetes_ca_cert_content:
+#

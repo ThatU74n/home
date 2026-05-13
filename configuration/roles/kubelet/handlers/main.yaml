@@ -1,0 +1,23 @@
+---
+- name: Update apt cache
+  when: ansible_facts['os_family'] == 'Debian'
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Update dnf cache
+  when: ansible_facts['os_family'] == 'RedHat'
+  become: true
+  ansible.builtin.dnf:
+    update_cache: true
+
+- name: Reload systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart Kubelet
+  become: true
+  ansible.builtin.systemd:
+    name: kubelet
+    state: restarted
