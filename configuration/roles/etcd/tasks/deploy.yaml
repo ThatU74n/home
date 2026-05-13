@@ -1,0 +1,38 @@
+---
+# Stop other mode deployments
+- name: Stop Etcd systemd deployment
+  become: true 
+  when:
+    - _mode != "systemd"
+    - "'etcd.service' in ansible_facts.services"
+    - ansible_facts.services['etcd.service']['state'] in ['running', 'active']
+  ansible.builtin.systemd:
+    name: etcd 
+    state: stopped
+
+- name: Stop Etcd static pod deployment
+  become: true
+  when:
+    - _mode != "staticpod"
+  ansible.builtin.file:
+    name: "{{ kubernetes_static_pod_dir }}/etcd.yaml"
+    state: absent
+
+# Start the deployment for the selected mode
+- name: Start Etcd systemd deployment
+  become: true 
+  when: _mode == "systemd"
+  ansible.builtin.systemd:
+    name: etcd 
+    state: started
+    enabled: true
+
+- name: Start Etcd static pod deployment 
+  become: true
+  when: _mode == "staticpod"
+  ansible.builtin.template:
+    src: etcd.yaml.jinja
+    dest: "{{ kubernetes_static_pod_dir }}/etcd.yaml"
+    owner: root
+    group: root
+    mode: "0644"

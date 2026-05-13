@@ -1,0 +1,23 @@
+---
+- name: Ensure bootstrap lock
+  become: true
+  ansible.builtin.file:
+    path: /etc/etcd/.bootstrapped
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Update Etcd configuration after bootstrap
+  become: true
+  when:
+    - not etcd_exist
+    - _mode == "systemd"
+  ansible.builtin.replace:
+    path: /etc/systemd/system/etcd.service
+    regexp: "--initial-cluster-state=new"
+    replace: "--initial-cluster-state=existing"
+  notify:
+    - Reload systemd

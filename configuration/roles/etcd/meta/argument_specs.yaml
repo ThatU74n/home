@@ -1,0 +1,123 @@
+---
+argument_specs:
+  main:
+    description: "Install and configure Etcd cluster"
+    short_description: "Install and configure Etcd cluster"
+    author: U74n
+    options:
+      # Version 
+      etcd_version:
+        type: str
+        description:
+          - "Etcd version to install"
+          - "Default: 3.6.10"
+        required: false 
+        default: 3.6.10
+
+      etcd_mode:
+        type: str 
+        description:
+          - "Etcd deployment mode"
+          - "Default: staticpod"
+        required: false
+        choices:
+          - systemd
+          - systemd-service
+          - systemd_service
+          - binary
+          - staticpod 
+          - static-pod
+          - static_pod
+          - kubelet
+        default: staticpod
+
+      etcd_download_url:
+        type: str 
+        description:
+          - "Etcd vendor download URL"
+          - "Either choose google cloud storage or github release" 
+        required: true
+
+      # Paths 
+      kubernetes_static_pod_dir:
+        type: path 
+        description:
+          - "Directory of Kubernetes static pods manifests when deploying etcd as static pod"
+          - "Default: /etc/kubernetes/manifests"
+        required: false
+        default: /etc/kubernetes/manifests
+
+      etcd_installation_dir:
+        type: path 
+        description:
+          - "Directory to install Etcd binaries when deploying as systemd service"
+          - "Default: /usr/local/etcd"
+        required: false
+        default: /usr/local/etcd 
+      
+      etcd_pki_dir:
+        type: path 
+        description:
+          - "Directory of Etcd PKI files"
+          - "Default: /etc/etcd/pki"
+        required: false
+        default: /etc/etcd/pki
+
+      # Network
+      etcd_advertise_server_address:
+        type: str 
+        description:
+          - "Etcd advertise server address"
+          - "Ex: 192.168.1.2, etcd.example.com"
+          - "Default: IPv4 address of the host"
+        required: false
+        default: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+      etcd_advertise_peer_address:
+        type: str 
+        description:
+          - "Etcd advertise peer address"
+          - "Ex: 192.168.1.2, etcd.example.com"
+          - "Default: IPv4 address of the host"
+        required: false
+        default: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+      # PKI      
+      etcd_ca_cert_content:
+        type: str 
+        description:
+          - "Etcd CA certificate content"
+          - "If not provided, It will slurp the CA certificate from the CA server"
+        required: false
+
+      etcd_ca_key_content:
+        type: str 
+        description:
+          - "Etcd CA private key content"
+          - "If not provided, It will slurp the CA private key from the CA server"
+        required: false
+
+      etcd_ca_server:
+        type: str 
+        description:
+          - "CA server to lookup CA certificate and key when no CA certificate and key content provided"
+          - "Default: the first control plane node in the inventory"
+        required: false
+        default: "{{ groups['control_plane'] | sort | first }}"
+
+      etcd_remote_ca_cert_path:
+        type: path 
+        description:
+          - "Remote path of Etcd CA certificate to slurp when no CA certificate content provided"
+          - "Default: /etc/etcd/pki/ca.crt"
+        required: false
+        default: /etc/etcd/pki/ca.crt 
+
+      etcd_remote_ca_key_path:
+        type: path 
+        description:
+          - "Remote path of Etcd CA private key to slurp when no CA private key content provided"
+          - "Default: /etc/etcd/pki/ca.key"
+        required: false
+        default: /etc/etcd/pki/ca.key
+

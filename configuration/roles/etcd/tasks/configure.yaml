@@ -1,0 +1,13 @@
+---
+- name: Copy configuration template
+  become: true
+  when: _mode == "systemd"
+  ansible.builtin.template:
+    src: etcd.service.jinja
+    dest: /etc/systemd/system/etcd.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart Etcd

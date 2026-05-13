@@ -1,0 +1,71 @@
+---
+# Ensure CA server exists 
+- name: Assert CA server exists 
+  when:
+    - etcd_ca_key_content is not truthy or etcd_ca_cert_content is not truthy
+    - not _is_etcd_ca_server_in_inventory
+  ansible.builtin.fail:
+     msg: "CA server is required to retrieve CA certificate and key"
+
+# Set Etcd CA key
+- name: Set Etcd CA key
+  when: etcd_ca_key_content is not truthy
+  delegate_to: "{{ etcd_ca_server }}"
+  become: true
+  run_once: true
+  block:
+    - name: Slurp Etcd CA key content 
+      register: etcd_remote_ca_key_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ etcd_remote_ca_key_path }}"
+
+    - name: Set Etcd CA key content fact
+      ansible.builtin.set_fact:
+        etcd_ca_key_content: "{{ etcd_remote_ca_key_content_slurp.content | b64decode }}"
+  rescue:
+    - name: Fail if Etcd CA key is missing
+      ansible.builtin.fail:
+        msg: "Etcd CA private key not found at {{ etcd_remote_ca_key_path }}. Please generate the CA private key or explicitly pass it as variable."
+          
+# Set Etcd CA certificate 
+- name: Set Etcd CA certificate
+  when: etcd_ca_cert_content is not truthy
+  delegate_to: "{{ etcd_ca_server }}"
+  become: true
+  run_once: true
+  block:
+    - name: Slurp Etcd CA certificate content
+      register: etcd_remote_ca_cert_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ etcd_remote_ca_cert_path }}"
+
+    - name: Set Etcd CA certificate content fact
+      ansible.builtin.set_fact:
+        etcd_ca_cert_content: "{{ etcd_remote_ca_cert_content_slurp.content | b64decode }}"
+  rescue:
+    - name: Fail if Etcd CA certificate is missing
+      ansible.builtin.fail:
+        msg: "Etcd CA certificate not found at {{ etcd_remote_ca_cert_path }}. Please generate the CA certificate or explicitly pass it as variable."
+  
+# Gather service facts 
+- name: Gather service facts
+  become: true
+  ansible.builtin.service_facts:
+
+# Ensure etcd_installation_dir is correctly set 
+- name: Assert etcd_installation_dir is correctly set
+  when:
+    - _mode == 'systemd'
+    - _is_systemd_and_etcd_installation_dir_blank
+  ansible.builtin.fail:
+    msg: "etcd_installation_dir is required when deployment mode is systemd."
+
+# Ensure kubernetes_installation_dir is correctly set 
+- name: Assert kubernetes_installation_dir is correctly set
+  when:
+    - _mode == 'systemd'
+    - _is_systemd_and_kubernetes_installation_dir_blank
+  ansible.builtin.fail:
+    msg: "kubernetes_installation_dir is required when deployment mode is systemd."
+  
+  

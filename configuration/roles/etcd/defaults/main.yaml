@@ -1,0 +1,20 @@
+---
+# Version 
+etcd_version: 3.6.10
+etcd_mode: staticpod 
+etcd_download_url: https://storage.googleapis.com/etcd
+# Paths
+kubernetes_static_pod_dir: /etc/kubernetes/manifests
+etcd_installation_dir: /usr/local/etcd 
+etcd_pki_dir: /etc/etcd/pki 
+# Network 
+etcd_advertise_server_address: "{{ ansible_facts['default_ipv4']['address'] }}"
+etcd_advertise_peer_address: "{{ ansible_facts['default_ipv4']['address'] }}"
+# PKI
+etcd_ca_cert_content:
+etcd_ca_key_content:
+etcd_ca_server: "{{ groups['control_plane'] | sort | first }}"
+etcd_remote_ca_cert_path: /etc/etcd/pki/ca.crt
+etcd_remote_ca_key_path: /etc/etcd/pki/ca.key
+
+etcd_exist: false

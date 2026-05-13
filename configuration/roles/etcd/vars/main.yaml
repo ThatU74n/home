@@ -1,0 +1,19 @@
+---
+# Network variables 
+_etcd_private_ip_address: "{{ ansible_facts['default_ipv4']['address'] }}"
+_etcd_advertise_server_address: "{{ etcd_advertise_server_address | default(ansible_facts['default_ipv4']['address']) }}"
+_etcd_advertise_peer_address: "{{ etcd_advertise_peer_address | default(ansible_facts['default_ipv4']['address']) }}"
+
+# Role variables
+_mode: >-
+  {%- set _mode_map = {
+    "staticpod": ["staticpod", "static-pod", "static_pod", "kubelet"],
+    "systemd": ["systemd", "systemd-service", "systemd_service", "binary"]
+  } -%}
+  {{ _mode_map | dict2items | selectattr('value', 'contains', etcd_mode) | map(attribute='key') | first }}
+
+
+_is_systemd_and_etcd_installation_dir_blank: "{{ _mode == 'systemd' and (etcd_installation_dir is not truthy)}}"
+_is_staticpod_and_kubernetes_static_pod_dir_blank: "{{ _mode == 'staticpod' and (kubernetes_static_pod_dir is not truthy)}}"
+_is_etcd_ca_server_in_inventory: "{{ etcd_ca_server in groups['all'] }}"
+
