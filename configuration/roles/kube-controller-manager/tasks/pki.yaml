@@ -1,0 +1,45 @@
+---
+# Fetch CA
+- name: Write CAs 
+  become: true
+  no_log: true
+  loop_control:
+    loop_var: ca_item
+  loop:
+    - dest: "{{ kubernetes_pki_dir }}/ca.crt"
+      content: "{{ kubernetes_ca_cert_content }}"
+      mode: '0644'
+    - dest: "{{ kubernetes_pki_dir }}/ca.key"
+      content: "{{ kubernetes_ca_key_content }}"
+      mode: '0600'
+  ansible.builtin.copy:
+    dest: "{{ ca_item.dest }}"
+    content: "{{ ca_item.content }}"
+    owner: root
+    group: root
+    mode: "{{ ca_item.mode }}"
+
+# Kube controller manager key & cert 
+- name: Generate Kube-controller-manager key
+  become: true
+  register: controller_manager_key
+  community.crypto.openssl_privatekey:
+    path: "{{ kubernetes_pki_dir }}/controller-manager.key"
+    size: 2048
+
+- name: Generate CSR for Kube-controller-manager
+  become: true
+  register: controller_manager_csr
+  changed_when: controller_manager_key.changed 
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ kubernetes_pki_dir }}/controller-manager.key"
+    common_name: system:kube-controller-manager
+
+- name: Sign Kube-controller-manager certificate
+  become: true
+  community.crypto.x509_certificate:
+    path: "{{ kubernetes_pki_dir }}/controller-manager.crt"
+    csr_content: "{{ controller_manager_csr.csr }}"
+    provider: ownca
+    ownca_content: "{{ kubernetes_ca_cert_content }}"
+    ownca_privatekey_content: "{{ kubernetes_ca_key_content }}"

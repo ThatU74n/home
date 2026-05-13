@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  author: U74n
+  description: Install and configure kube-controller-manager cluster
+  min_ansible_version: 2.20
+  platforms:
+    - name: Debian
+      versions:
+        - 13

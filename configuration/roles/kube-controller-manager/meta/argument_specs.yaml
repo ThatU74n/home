@@ -1,0 +1,93 @@
+---
+argument_specs:
+  main:
+    description: Install and configure Kube-controller-manager
+    short_description: Install and configure Kube-controller-manager
+    author:
+      - U74n
+    options:
+      kubernetes_version:
+        type: str 
+        description:
+          - "Kubernetes version of Kube-controller-manager to install"
+          - "It's recommended to use the same version as the other components in the cluster"
+        required: true
+
+      kubenretes_installation_dir:
+        type: path 
+        description:
+          - "Directory to install Kube-controller-manager binary when deploying as systemd service"
+          - "Default: /usr/local/kubernetes"
+        required: false
+        default: /usr/local/kubernetes 
+
+      kubernetes_static_pod_dir:
+        type: path
+        description:
+          - "Directory of Kubernetes static pods manifests when deploying Kube-controller-manager as static pod"
+          - "Default: /etc/kubernetes/manifests"
+        required: false
+        default: /etc/kubernetes/manifests
+
+      kubernetes_pki_dir:
+        type: path
+        description:
+          - "Directory of Kubernetes PKI files"
+          - "Default: /etc/kubernetes/pki"
+        required: false
+        default: /etc/kubernetes/pki
+
+      kubernetes_ca_cert_content:
+        type: str 
+        description:
+          - "Kubernetes CA certificate content"
+          - "If not provided, It will slurp the CA certificate at kubernetes_pki_dir/ca.crt"
+        required: false
+
+      kubernetes_ca_key_content:
+        type: str 
+        description:
+          - "Kubernetes CA private key content"
+          - "If not provided, It will slurp the CA private key at kubernetes_pki_dir/ca.key"
+        required: false
+
+      kubernetes_ca_server:
+        type: str 
+        required: false 
+        default:  "{{ groups['control_plane'] | sort | first }}"
+
+      kubernetes_remote_ca_cert_path:
+        type: path 
+        required: false
+        default: /etc/kubernetes/pki/ca.crt 
+
+      kubernetes_remote_ca_key_path:
+        type: path 
+        required: false
+        default: /etc/kubernetes/pki/ca.key
+
+      kube_controller_manager_checksum:
+        type: str
+        description:
+          - "SHA256 checksum of Kube-controller-manager binary for verification"
+          - "Default: if not provided, it will attempt to fetch the checksum from the kubernetes release page"
+        required: false
+
+      kube_controller_manager_mode:
+        type: str 
+        description:
+          - "Deployment mode for Kube-controller-manager"
+          - "Default: staticpod"
+        choices:
+          - systemd 
+          - systemd-service
+          - systemd_service
+          - binary
+          - staticpod 
+          - static-pod
+          - static_pod
+          - kubelet
+        required: false
+        default: staticpod
+
+

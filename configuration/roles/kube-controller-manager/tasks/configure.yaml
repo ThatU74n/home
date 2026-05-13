@@ -1,0 +1,37 @@
+---
+- name: Slurp controller-manager certificate
+  become: true
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_dir }}/controller-manager.crt"
+  register: kube_controller_manager_cert
+
+- name: Slurp controller-manager key
+  become: true
+  ansible.builtin.slurp:
+    src: "{{ kubernetes_pki_dir }}/controller-manager.key"
+  register: kube_controller_manager_key
+
+- name: Write controller-manager kubeconfig
+  become: true
+  ansible.builtin.template:
+    src: controller-manager.conf.jinja
+    dest: /etc/kubernetes/controller-manager.conf
+    owner: root
+    group: root
+    mode: "0600"
+  notify:
+    - Restart Kube-controller-manager
+    #- kubelet restart pod
+
+- name: Copy service template
+  become: true
+  when: _mode == "systemd"
+  ansible.builtin.template:
+    src: controller-manager.service.jinja
+    dest: /etc/systemd/system/kube-controller-manager.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart Kube-controller-manager

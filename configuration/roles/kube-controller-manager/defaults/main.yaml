@@ -1,0 +1,17 @@
+---
+# Version  
+kubernetes_version: 1.35.0
+kube_controller_manager_checksum:
+kube_controller_manager_mode: staticpod 
+# Paths
+kubernetes_installation_dir: /usr/local/kubernetes 
+kubernetes_static_pod_dir: /etc/kubernetes/manifests
+kubernetes_pki_dir: /etc/kubernetes/pki 
+# Network
+# PKI 
+kubernetes_ca_cert_content:
+kubernetes_ca_key_content:
+kubernetes_ca_server: "{{ groups['control_plane'] | sort | first }}"
+kubernetes_remote_ca_cert_path: /etc/kubernetes/pki/ca.crt
+kubernetes_remote_ca_key_path: /etc/kubernetes/pki/ca.key 
+# Other

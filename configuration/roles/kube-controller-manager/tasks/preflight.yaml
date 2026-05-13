@@ -1,0 +1,100 @@
+---
+# Ensure CA servers exists
+- name: Assert Kubernetes CA server exists
+  when:
+    - kubernetes_ca_key_content is not truthy or kubernetes_ca_cert_content is not truthy
+    - not _is_kubernetes_ca_server_in_inventory
+  ansible.builtin.fail:
+     msg: "CA server is required to retrieve CA certificate and key"
+
+# Set Kubernetes CA key 
+- name: Set Kubernetes CA key
+  delegate_to: "{{ kubernetes_ca_server }}"
+  when: kubernetes_ca_key_content is not truthy
+  become: true 
+  run_once: true 
+  block:
+    - name: Slurp Kubernetes CA key content
+      register: kubernetes_remote_ca_key_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ kubernetes_remote_ca_key_path }}"
+
+    - name: Set Kubernetes CA key content fact
+      ansible.builtin.set_fact:
+        kubernetes_ca_key_content: "{{ kubernetes_remote_ca_key_content_slurp.content | b64decode }}"
+  rescue:
+    - name: Fail if Kubernetes CA key is missing
+      ansible.builtin.fail:
+        msg: "Kubernetes CA private key not found at {{ kubernetes_remote_ca_key_path }}. Please generate the CA private key or explicitly pass it as variable."
+
+# Set Kubernetes CA certificate
+- name: Set Kubernetes CA certificate
+  delegate_to: "{{ kubernetes_ca_server }}"
+  when: kubernetes_ca_cert_content is not truthy
+  become: true 
+  run_once: true 
+  block:
+    - name: Slurp Kubernetes CA certificate content
+      register: kubernetes_remote_ca_cert_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ kubernetes_remote_ca_cert_path }}"
+
+    - name: Set Kubernetes CA certificate content fact 
+      ansible.builtin.set_fact:
+        kubernetes_ca_cert_content: "{{ kubernetes_remote_ca_cert_content_slurp.content | b64decode }}"
+  rescue:
+    - name: Fail if Kubernetes CA certificate is missing
+      ansible.builtin.fail:
+        msg: "Kubernetes CA certificate not found at {{ kubernetes_remote_ca_cert_path }}. Please generate the CA certificate or explicitly pass it as variable."
+
+# Check Service account key 
+- name: Register Service account key 
+  become: true 
+  register: sa_key_stat
+  ansible.builtin.stat:
+    path: "{{ kubernetes_pki_dir }}/service-account.key"
+
+- name: Assert Service account key exists 
+  ansible.builtin.assert:
+    that: sa_key_stat.stat.exists
+    fail_msg: "Service account private key not found at {{ kubernetes_pki_dir }}/service-account.key. Please run the kube-apiserver role to generate the keys."
+
+# Check Kube-controller-manager checksum
+- name: Register Kube-controller-manager checksum
+  when:
+    - _mode == "systemd"
+    - not kube_controller_manager_checksum
+  block:
+    - name: Fetch Kube-controller-manager checksum
+      changed_when: false
+      register: kube_controller_manager_checksum_result
+      ansible.builtin.uri:
+        url: "https://dl.k8s.io/v{{ kubernetes_version }}/bin/linux/amd64/kube-controller-manager.sha256"
+        return_content: true
+
+    - name: Set Kube-controller-manager checksum fact
+      ansible.builtin.set_fact:
+        kube_controller_manager_checksum: "{{ kube_controller_manager_checksum_result.content }}"
+
+# Gather service facts 
+- name: Gather service facts 
+  become: true 
+  ansible.builtin.service_facts:
+
+# Ensure kubernetes_installation_dir is correctly set 
+- name: Assert kubernetes_installation_dir is correctly set 
+  when: 
+    - _mode == 'systemd'
+    - _is_systemd_and_kubernetes_installation_dir_blank
+  ansible.builtin.fail:
+    msg: "kubernetes_installation_dir is required when deployment mode is systemd."
+
+# Ensure kubernetes_static_pod_dir is correctly set 
+- name: Assert kubernetes_static_pod_dir is correctly set 
+  when: 
+    - _mode == 'staticpod'
+    - _is_staticpod_and_kubernetes_static_pod_dir_blank
+  ansible.builtin.fail:
+    msg: "kubernetes_static_pod_dir is required when deployment mode is staticpod."
+
+
