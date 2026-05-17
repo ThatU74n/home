@@ -1,0 +1,8 @@
+---
+- name: Install Containerd
+  become: true
+  ansible.builtin.pacman:
+    name:
+      - containerd
+      - cri-tools
+    state: present

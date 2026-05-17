@@ -1,0 +1,2 @@
+---
+_kubernetes_minor_version: "{{ kubernetes_version.split('.')[0:1] | join('.') }}"

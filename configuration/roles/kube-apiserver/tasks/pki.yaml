@@ -107,15 +107,58 @@
 # Front proxy client key - cert
 
 # Service account key - cert 
+# One per cluster
+- name: Ensure PKI directory exists on the first control plane node 
+  become: true
+  run_once: true
+  delegate_to: "{{ groups['control_plane'] | sort | first }}"
+  ansible.builtin.file:
+    path: "{{ kubernetes_pki_dir }}"
+    state: directory
+    owner: root
+    group: root
+
 - name: Generate Service account key
   become: true
+  run_once: true
+  delegate_to: "{{ groups['control_plane'] | sort | first }}"
   community.crypto.openssl_privatekey:
     path: "{{ kubernetes_pki_dir }}/service-account.key"
     size: 2048
 
 - name: Generate Service account public key
   become: true
+  run_once: true 
+  delegate_to: "{{ groups['control_plane'] | sort | first }}"
   community.crypto.openssl_publickey:
     path: "{{ kubernetes_pki_dir }}/service-account.pub"
     privatekey_path: "{{ kubernetes_pki_dir }}/service-account.key"
+
+- name: Fetch Service account key pair to controller
+  become: true
+  run_once: true
+  delegate_to: "{{ groups['control_plane'] | sort | first }}"
+  loop:
+    - service-account.key
+    - service-account.pub
+  ansible.builtin.fetch:
+    src: "{{ kubernetes_pki_dir }}/{{ item }}"
+    dest: /tmp/sa-pki/
+    flat: true
+
+- name: Push Service account key pair to other control plane nodes
+  become: true
+  when:
+    - inventory_hostname != (groups['control_plane'] | sort | first)
+    - groups['control_plane'] | length > 1
+  loop:
+    - service-account.key
+    - service-account.pub
+  ansible.builtin.copy:
+    src: "/tmp/sa-pki/{{ item }}"
+    dest: "{{ kubernetes_pki_dir }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "0600"
+
 

@@ -1,7 +1,25 @@
 ---
-- name: Check
-  ansible.builtin.import_tasks: check.yaml
-- name: Install
-  ansible.builtin.import_tasks: install.yaml
+- name: Preflight
+  ansible.builtin.import_tasks: preflight.yaml
+
+- name: Install (Debian)
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.import_tasks: install_debian.yaml
+
+- name: Install (RedHat)
+  when: ansible_facts['os_family'] == "RedHat"
+  ansible.builtin.import_tasks: install_redhat.yaml
+
+- name: Install (ArchLinux)
+  when: ansible_facts['os_family'] == 'ArchLinux'
+  ansible.builtin.import_tasks: install_archlinux.yaml
+
+- name: Install (MacOS)
+  when: ansible_facts['os_family'] == "Darwin"
+  ansible.builtin.import_tasks: install_darwin.yaml
+
+- name: Configure PKI
+  ansible.builtin.import_tasks: pki.yaml
+
 - name: Configure
   ansible.builtin.import_tasks: configure.yaml

@@ -1,0 +1,26 @@
+---
+- name: Generate Kubectl key
+  become: true
+  register: kubectl_key
+  changed_when: false 
+  community.crypto.openssl_privatekey_pipe:
+    size: 2048
+
+- name: Generate CSR for Kubectl
+  become: true
+  register: kubectl_csr
+  changed_when: false
+  community.crypto.openssl_csr_pipe:
+    privatekey_content: "{{ kubectl_key.privatekey }}"
+    common_name: "kubernetes-admin"
+    organization_name: "system:masters"
+
+- name: Sign Kubectl certificate
+  become: true
+  register: kubectl_cert
+  changed_when: false
+  community.crypto.x509_certificate_pipe:
+    csr_content: "{{ kubectl_csr.csr }}"
+    provider: ownca
+    ownca_content: "{{ kubernetes_ca_cert_content }}"
+    ownca_privatekey_content: "{{ kubernetes_ca_key_content }}"

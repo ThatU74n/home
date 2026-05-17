@@ -6,4 +6,14 @@ galaxy_info:
   platforms:
     - name: Debian
       versions:
-        - 13
+        - 13        - Trixie
+        - 12        - Bookworm
+
+    - name: CentOS
+      versions:
+        - stream 10 - Coughlan
+
+    - name: Fedora
+      versions:
+        - 43
+        - 42

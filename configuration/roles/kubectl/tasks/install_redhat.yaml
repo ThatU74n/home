@@ -1,15 +1,17 @@
 ---
 - name: Install dependencies
-  become: true
+  become: true 
   ansible.builtin.dnf:
-    name:
+    name: 
+      - python3-debian
+      - apt-transport-https
       - ca-certificates
       - curl
-      - gnupg
+      - gpg
     state: present
 
-- name: Add Kubernetes repository
-  become: true
+- name: Add Kubernetes repository 
+  become: true 
   notify: Update dnf cache
   ansible.builtin.yum_repository:
     name: kubernetes
@@ -22,9 +24,8 @@
 - name: Flush handler
   ansible.builtin.meta: flush_handlers
 
-- name: Install Kubelet
-  become: true
+- name: Install Kubectl
+  become: true 
   ansible.builtin.dnf:
-    name: "kubelet"
-    allow_downgrade: true
+    name: "kubectl"
     state: present

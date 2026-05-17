@@ -1,13 +1,25 @@
 ---
-- name: Preinstall
-  ansible.builtin.import_tasks: preinstall.yaml
-- name: Install
-  ansible.builtin.import_tasks: install.yaml
+- name: Install (Debian)
+  when: ansible_facts['os_family'] == 'Debian'
+  ansible.builtin.import_tasks: install_debian.yaml
+
+- name: Install (RedHat)
+  when: ansible_facts['os_family'] == 'RedHat'
+  ansible.builtin.import_tasks: install_redhat.yaml
+
+- name: Install (ArchLinux)
+  when: ansible_facts['os_family'] == 'Archlinux'
+  ansible.builtin.import_tasks: install_archlinux.yaml
+
 - name: Configure
   ansible.builtin.import_tasks: configure.yaml
 
-- name: Check if containerd is installed
-  ansible.builtin.command: containerd --version
-  register: containerd_check
-  changed_when: false
-  failed_when: containerd_check.rc != 0
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure containerd is running
+  become: true
+  ansible.builtin.systemd:
+    name: containerd
+    state: started
+    enabled: true

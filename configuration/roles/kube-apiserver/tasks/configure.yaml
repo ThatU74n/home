@@ -14,10 +14,18 @@
 
 - name: Copy encryption configuration 
   become: true
-  ansible.builtin.template:
-    src: encryption-config.yaml.jinja
-    dest: "/etc/kubernetes/encryption-config.yaml"
-    owner: root
-    group: root
-    mode: "0600"
+  block:
+    - name: Stat encryption configuration file exists
+      register: encryption_config_stat
+      ansible.builtin.stat:
+        path: /etc/kubernetes/encryption-config.yaml
+
+    - name: Copy configuration 
+      when: not encryption_config_stat.stat.exists
+      ansible.builtin.template:
+        src: encryption-config.yaml.jinja
+        dest: "/etc/kubernetes/encryption-config.yaml"
+        owner: root
+        group: root
+        mode: "0600"
 

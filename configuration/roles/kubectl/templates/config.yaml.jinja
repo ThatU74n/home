@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Config
+clusters:
+  - cluster:
+      certificate-authority-data: {{ kubernetes_ca_cert_content | b64encode }}
+      server: https://{{ hostvars[groups['control_plane'] | sort | first]['ansible_host'] }}:6443
+    name: kubernetes
+contexts:
+  - context:
+      cluster: kubernetes
+      user: kubernetes-admin
+    name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+users:
+  - name: kubernetes-admin
+    user:
+      client-certificate-data: {{ kubectl_cert.certificate | b64encode }}
+      client-key-data: {{ kubectl_key.privatekey | b64encode }} 

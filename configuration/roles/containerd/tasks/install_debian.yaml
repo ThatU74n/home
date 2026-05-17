@@ -25,14 +25,14 @@
     signed_by: /etc/apt/keyrings/docker.asc
     state: present
     enabled: true
+  notify: Update apt cache
 
-- name: Update apt cache
-  become: true
-  ansible.builtin.apt:
-    update_cache: true
+- name: Flush handler
+  ansible.builtin.meta: flush_handlers
 
 - name: Install Containerd
   become: true
   ansible.builtin.apt:
-    name: containerd.io
+    name:
+      - containerd.io
     state: present

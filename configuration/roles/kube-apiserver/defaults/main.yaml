@@ -1,7 +1,7 @@
 ---
 # Version
 kubernetes_version: 1.35.5
-kupe_apiserver_checksum:
+kube_apiserver_checksum:
 kube_apiserver_mode: staticpod 
 # Paths 
 kubernetes_installation_dir: /usr/local/kubernetes 

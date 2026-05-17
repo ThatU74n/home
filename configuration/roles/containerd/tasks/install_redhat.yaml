@@ -1,0 +1,27 @@
+---
+- name: Install dependencies
+  become: true
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+
+- name: Add Docker repository
+  become: true
+  ansible.builtin.yum_repository:
+    name: docker-ce-stable
+    description: Docker CE Stable - $basearch
+    baseurl: "https://download.docker.com/linux/centos/9/$basearch/stable"
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://download.docker.com/linux/centos/gpg
+  notify: Update dnf cache
+
+- name: Flush handler
+  ansible.builtin.meta: flush_handlers
+
+- name: Install Containerd
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - containerd.io
+    state: present

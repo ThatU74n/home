@@ -1,19 +1,15 @@
 ---
 galaxy_info:
   author: U74n
-  description: Install and configure kube-apiserver cluster
+  description: Install and configure Containerd
   min_ansible_version: 2.20
   platforms:
     - name: Debian
       versions:
-        - 13        - Trixie
-        - 12        - Bookworm
-
+        - 13       - Trixie 
     - name: CentOS
       versions:
         - stream 10 - Coughlan
-
     - name: Fedora
       versions:
-        - 43
-        - 42
+        - 38
