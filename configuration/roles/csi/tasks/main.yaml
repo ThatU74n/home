@@ -1,0 +1,5 @@
+---
+- name: Configure CSI drivers
+  when: csi_driver is truthy
+  ansible.builtin.import_tasks: "{{ csi_driver }}.yaml"
+

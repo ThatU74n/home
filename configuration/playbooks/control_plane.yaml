@@ -2,112 +2,118 @@
 - name: Configure Control Plane
   hosts: control_plane
   serial: 1
-  gather_facts: false
+  pre_tasks:
+    - name: Configure DNS
+      become: true
+      ansible.builtin.blockinfile:
+        path: /etc/resolv.conf
+        block: |
+          nameserver 1.1.1.1
+          nameserver 8.8.8.8
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - DNS CONFIGURATION"
+
+    - name: Update apt cache (Debian)
+      when: ansible_facts['os_family'] == "Debian"
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Update dnf cache (RedHat)
+      when: ansible_facts['os_family'] == "RedHat"
+      become: true
+      ansible.builtin.dnf:
+        update_cache: true
+
+    - name: Update AUR cache (ArchLinux)
+      when: ansible_facts['os_family'] == 'ArchLinux'
+      community.general.pacman:
+        update_cache: true
+
+    - name: Ensure dependencies
+      become: true
+      ansible.builtin.package:
+        name:
+          - python3-cryptography
+        state: present
+
+    - name: Enable IPv4 forwarding for Containerd
+      become: true
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: "1"
+        state: present
+        reload: true
+
+    - name: Check swap
+      become: true
+      ansible.builtin.command: swapon --show
+      register: kubelet_swap_check
+      changed_when: false
+      failed_when: false
+
+    - name: Turn off swap
+      when: kubelet_swap_check.stdout != ''
+      become: true
+      block:
+        - name: Turn off swap temporarily
+          ansible.builtin.command:
+            cmd: swapoff -a
+
+        - name: Turn off swap permanently
+          ansible.builtin.replace:
+            path: /etc/fstab 
+            regexp: "^([^#].*swap.*)$"
+            replace: '# \1'
+
+    - name: Disable swap for Kubelet
+      become: true
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: "^([^#].*swap.*)$"
+        replace: '# \1'
   tasks:
-    - name: Wait for SSH
-      delegate_to: localhost
-      ansible.builtin.wait_for:
-        host: "{{ ansible_host }}"
-        port: 22
-        timeout: 300
-        delay: 10
-
-    - name: Gather facts
-      ansible.builtin.gather_facts:
-
-    - name: Preconfigure virtual machine
+    - name: Generate Etcd CA 
       ansible.builtin.import_role:
-        name: vm
+        name: certificate-authority
+      vars:
+        ca_key_path: /etc/etcd/pki/ca.key 
+        ca_cert_path: /etc/etcd/pki/ca.crt 
+        ca_common_name: Etcd CA
 
-    - name: Longhorn prerequisites
+    - name: Generate Kubernetes CA 
       ansible.builtin.import_role:
-        name: longhorn
+        name: certificate-authority
+      vars:
+        ca_key_path: /etc/kubernetes/pki/ca.key 
+        ca_cert_path: /etc/kubernetes/pki/ca.crt 
+        ca_common_name: Kubernetes CA
+
+    - name: Etcd
+      ansible.builtin.import_role:
+        name: etcd
+      vars:
+        etcd_advertise_server_address: "{{ ansible_facts['default_ipv4']['address'] }}"
+        etcd_advertise_peer_address: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+    - name: Kube-apiserver
+      ansible.builtin.import_role:
+        name: kube-apiserver
+
+    - name: Kube-controller-manager
+      ansible.builtin.import_role:
+        name: kube-controller-manager
+
+    - name: Kube-scheduler
+      ansible.builtin.import_role:
+        name: kube-scheduler
 
     - name: Containerd
       ansible.builtin.import_role:
         name: containerd
 
-    - name: Kubeadm
-      ansible.builtin.import_role:
-        name: kubeadm
-
     - name: Kubelet
       ansible.builtin.import_role:
         name: kubelet
 
-    - name: Flush handler
-      ansible.builtin.meta: flush_handlers
 
-    # TODO: when configure HA cluster, swapout the ip to a HA Proxy
-    # If not, then all cluster will only listen to the first control plane node, ultimately become the single point of failure
-    - name: Check if the cluster is initialized
-      register: cluster_health
-      until: cluster_health.status == 200
-      retries: 3
-      delay: 10
-      failed_when: false
-      ansible.builtin.uri:
-        url: https://{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}:6443/healthz
-        validate_certs: false
-
-    - name: Initialize the cluster
-      when: cluster_health.status != 200
-      block:
-        - name: Kubeadm init
-          ansible.builtin.include_role:
-            name: kubeadm
-            tasks_from: init
-
-        - name: Ensure kubeconfig directory exists
-          ansible.builtin.file:
-            path: "{{ ansible_facts['env']['HOME'] }}/.kube"
-            state: directory
-
-        - name: Configure kubeconfig
-          become: true
-          ansible.builtin.copy:
-            remote_src: true
-            src: /etc/kubernetes/admin.conf
-            dest: "{{ ansible_facts['env']['HOME'] }}/.kube/config"
-            mode: "0600"
-            owner: "{{ ansible_facts['env']['USER'] }}"
-            group: "{{ ansible_facts['env']['USER'] }}"
-
-        - name: Helm
-          ansible.builtin.include_role:
-            name: helm
-
-        - name: Install CNI
-          kubernetes.core.helm:
-            name: cilium
-            chart_ref: cilium
-            chart_repo_url: https://helm.cilium.io/
-            namespace: kube-system
-            create_namespace: false
-            values:
-              kubeProxyReplacement: "true"
-              socketLB:
-                hostNamespaceOnly: "true"
-
-        - name: Set join command fact
-          register: join_command
-          become: true
-          ansible.builtin.command: kubeadm token create --print-join-command
-
-    - name: Join the cluster
-      when: cluster_health.status == 200
-      block:
-        - name: Get join command from control plane
-          register: join_command
-          become: true
-          ansible.builtin.command: kubeadm token create --print-join-command
-          delegate_to: "{{ groups['control_plane'][0] }}"
-
-        - name: Set join command fact
-          ansible.builtin.set_fact:
-            join_command: "{{ join_command.stdout }}"
-
-        - name: Join the cluster
-          ansible.builtin.include_role:
-            name: kubeadm
-            tasks_from: join

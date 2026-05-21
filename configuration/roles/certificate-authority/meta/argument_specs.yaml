@@ -1,0 +1,25 @@
+---
+argument_specs:
+  main:
+    description: Provision Certificate Authority
+    short_description: Provision Certificate Authority
+    author:
+      - U74n
+    options:
+      ca_key_path:
+        type: path 
+        description:
+          - "Path of CA private key"
+        required: true
+
+      ca_cert_path:
+        type: path 
+        description:
+          - "Path of CA certificate"
+        required: true
+
+      ca_common_name:
+        type: str 
+        description:
+          - "Common name of the CA certificate"
+        required: true

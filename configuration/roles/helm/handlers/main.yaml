@@ -1,0 +1,6 @@
+---
+- name: Update apt cache
+  when: ansible_facts['os_family'] == "Debian"
+  become: true
+  ansible.builtin.apt:
+    update_cache: true

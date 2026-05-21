@@ -28,11 +28,16 @@
             pkgs.go
             
             pkgs.ansible
-            pkgs.terraform
-
+            pkgs.opentofu
+            pkgs.kubectl
           ];
 
           shellHook = ''
+            # Load env 
+            if [ -f .env ]; then
+              export $(cat .env | xargs)
+            fi
+
             alias vi="nvim"
             alias vim="nvim"
             alias ls="lsd"

@@ -3,13 +3,27 @@ kind: Config
 clusters:
   - cluster:
       certificate-authority-data: {{ kubernetes_ca_cert_content | b64encode }}
-      server: https://{{ hostvars[groups['control_plane'] | sort | first]['ansible_host'] }}:6443
-    name: kubernetes
+      server: https://{{ hostvars[_kubernetes_first_control_plane_host]['ansible_host'] }}:6443
+    name: kubernetes 
+{% if hostvars[_kubernetes_first_control_plane_host]['ansible_facts']['tailscale0'] %}
+  - cluster:
+      certificate-authority-data: {{ kubernetes_ca_cert_content | b64encode }}
+      server: https://{{ hostvars[_kubernetes_first_control_plane_host]['ansible_facts']['tailscale0']['ipv4_address'] }}:6443
+    name: kubernetes-tailscale
+{% endif %}
+
 contexts:
   - context:
       cluster: kubernetes
       user: kubernetes-admin
     name: kubernetes-admin@kubernetes
+{% if hostvars[_kubernetes_first_control_plane_host]['ansible_facts']['tailscale0'] %}
+  - context:
+      cluster: kubernetes-tailscale
+      user: kubernetes-admin
+    name: kubernetes-admin@kubernetes-tailscale
+{% endif %}
+
 current-context: kubernetes-admin@kubernetes
 users:
   - name: kubernetes-admin

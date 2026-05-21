@@ -1,65 +1,82 @@
 ---
 - name: Configure Worker Nodes
   hosts: worker
-  gather_facts: false
+  pre_tasks:
+    - name: Configure DNS
+      become: true
+      ansible.builtin.blockinfile:
+        path: /etc/resolv.conf
+        block: |
+          nameserver 1.1.1.1
+          nameserver 8.8.8.8
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - DNS CONFIGURATION"
+
+    - name: Update apt cache (Debian)
+      when: ansible_facts['os_family'] == "Debian"
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Update dnf cache (RedHat)
+      when: ansible_facts['os_family'] == "RedHat"
+      become: true
+      ansible.builtin.dnf:
+        update_cache: true
+
+    - name: Update AUR cache (ArchLinux)
+      when: ansible_facts['os_family'] == 'ArchLinux'
+      community.general.pacman:
+        update_cache: true
+
+    - name: Ensure dependencies
+      become: true
+      ansible.builtin.package:
+        name:
+          - python3-cryptography
+        state: present
+
+    - name: Enable IPv4 forwarding for Containerd
+      become: true
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: "1"
+        state: present
+        reload: true
+
+    - name: Check swap
+      become: true
+      ansible.builtin.command: swapon --show
+      register: kubelet_swap_check
+      changed_when: false
+      failed_when: false
+
+    - name: Turn off swap
+      when: kubelet_swap_check.stdout != ''
+      become: true
+      block:
+        - name: Turn off swap temporarily
+          ansible.builtin.command:
+            cmd: swapoff -a
+
+        - name: Turn off swap permanently
+          ansible.builtin.replace:
+            path: /etc/fstab 
+            regexp: "^([^#].*swap.*)$"
+            replace: '# \1'
+
+    - name: Disable swap for Kubelet
+      become: true
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: "^([^#].*swap.*)$"
+        replace: '# \1'
+   
   tasks:
-    - name: Wait for SSH
-      delegate_to: localhost
-      ansible.builtin.wait_for:
-        host: "{{ ansible_host }}"
-        port: 22
-        timeout: 300
-        delay: 10
-
-    - name: Gather facts
-      ansible.builtin.gather_facts:
-
-    - name: Preconfigure virtual machine
+    - name: Containerd 
       ansible.builtin.import_role:
-        name: vm
-
-    - name: Longhorn prerequisites
-      ansible.builtin.import_role:
-        name: longhorn
-
-    - name: Containerd
-      ansible.builtin.import_role:
-        name: containerd
-
-    - name: Kubeadm
-      ansible.builtin.import_role:
-        name: kubeadm
+        name: containerd 
 
     - name: Kubelet
       ansible.builtin.import_role:
-        name: kubelet
-
-    - name: Flush handler
-      ansible.builtin.meta: flush_handlers
-
-    # TODO: when configure HA cluster, swapout the ip to a HA Proxy
-    # If not, then all cluster will only listen to the first control plane node, ultimately become the single point of failure
-    - name: Check if the cluster is initialized
-      register: cluster_health
-      until: cluster_health.status == 200
-      retries: 3
-      delay: 10
-      failed_when: false
-      ansible.builtin.uri:
-        url: https://{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}:6443/healthz
-        validate_certs: false
-
-    - name: Join the cluster
-      when: cluster_health.status == 200
-      block:
-        - name: Get join command from control plane
-          register: join_command
-          when: join_command is not defined
-          become: true
-          ansible.builtin.command: kubeadm token create --print-join-command
-          delegate_to: "{{ groups['control_plane'][0] }}"
-
-        - name: Join the cluster
-          ansible.builtin.include_role:
-            name: kubeadm
-            tasks_from: join
+        name: kubelet 

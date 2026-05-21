@@ -1,0 +1,10 @@
+---
+
+_longhorn_dependency:
+  - open-iscsi
+  - nfs-common
+  - curl
+  - util-linux  # provides findmnt, blkid, lsblk
+  - grep
+  - gawk
+

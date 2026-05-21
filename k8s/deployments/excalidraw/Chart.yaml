@@ -1,0 +1,8 @@
+---
+apiVersion: v2 
+name: Excalidraw
+version: 0.0.1
+description: A Helm chart for deploying Excalidraw
+maintainers:
+  - name: Utan
+    email: utan.dev2358@gmail.com

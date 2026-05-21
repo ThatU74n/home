@@ -1,0 +1,44 @@
+---
+- name: Ensure tigera-operator namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: tigera-operator
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add Helm repository
+  kubernetes.core.helm_repository:
+     name: projectcalico
+     repo_url: https://docs.tigera.io/calico/charts
+     state: present
+
+- name: Render Tigera Operator CRDs
+  register: calico_crds_manifest
+  kubernetes.core.helm_template:
+    name: calico-crds
+    chart_ref: projectcalico/projectcalico.org.v3
+    include_crds: true
+
+- name: Apply Tigera Operator CRDs
+  register: calico_crds_apply
+  changed_when: "'serverside-applied' in calico_crds_apply.stdout"
+  failed_when: >-
+    calico_crds_apply.rc != 0 and
+    (calico_crds_apply.stderr_lines
+     | reject('search', 'MutatingAdmission|Warning:|ensure CRDs')
+     | list | length > 0)
+  ansible.builtin.shell:
+    cmd: kubectl apply --server-side -f - --kubeconfig {{ kubeconfig }}
+    stdin: "{{ calico_crds_manifest.stdout }}"
+
+- name: Install Tigera Operator
+  kubernetes.core.helm:
+    kubeconfig: "{{ kubeconfig }}"
+    name: calico 
+    chart_ref: projectcalico/tigera-operator
+    namespace: tigera-operator
+    create_namespace: false
+
+
+  

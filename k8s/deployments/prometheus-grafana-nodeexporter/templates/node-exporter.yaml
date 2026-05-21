@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: "{{ .Release.Name }}-node-exporter"
+  labels:
+    app: node-exporter
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      containers:
+        - name: node-exporter
+          image: "{{ .Values.nodeExporter.repository }}:{{ .Values.nodeExporter.tag }}"
+          ports:
+            - containerPort: 9100
+          args:
+            - "--path.procfs=/host/proc"
+            - "--path.sysfs=/host/sys"
+            - "--path.rootfs=/host/root"
+          volumeMounts:
+            - name: procfs  
+              mountPath: /host/proc
+              readOnly: true
+            - name: sysfs
+              mountPath: /host/sys
+              readOnly: true
+            - name: rootfs
+              mountPath: /host/root
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: procfs
+          hostPath:
+            path: /proc 
+        - name: sysfs
+          hostPath:
+            path: /sys 
+        - name: rootfs
+          hostPath:
+            path: /
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-node-exporter"
+spec:
+  type: ClusterIP
+  selector:
+    app: node-exporter
+  ports:
+    - port: 9100
+      targetPort: 9100
+

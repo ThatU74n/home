@@ -3,7 +3,7 @@ kind: Config
 clusters:
   - cluster:
       certificate-authority-data: {{ kubernetes_ca_cert_content | b64encode }}
-      server: https://{{ groups['control_plane'] | sort | first }}:6443
+      server: https://{{ hostvars[groups['control_plane'] | sort | first]['ansible_host'] }}:6443
     name: kubernetes
 contexts:
   - context:

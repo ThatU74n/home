@@ -1,0 +1,46 @@
+---
+- name: Install Dependencies
+  become: true
+  ansible.builtin.apt:
+    name:
+      - python3-debian
+      - apt-transport-https
+      - curl
+      - gpg
+    state: present
+
+- name: Download Kubernetes GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
+    dest: /etc/apt/keyrings/helm.asc
+    mode: "0644"
+
+- name: Dearmor Helm GPG key
+  become: true
+  ansible.builtin.command: "gpg --dearmor -o /etc/apt/keyrings/helm.gpg /etc/apt/keyrings/helm.asc"
+  args:
+    creates: /etc/apt/keyrings/helm.gpg
+
+- name: Add Helm repository
+  become: true
+  ansible.builtin.deb822_repository:
+    name: helm
+    types: deb
+    uris: https://packages.buildkite.com/helm-linux/helm-debian/any/
+    suites: any
+    components: main
+    signed_by: /etc/apt/keyrings/helm.gpg
+    state: present
+    enabled: true
+  notify:
+    - Update apt cache
+
+- name: Flush handler
+  ansible.builtin.meta: flush_handlers
+
+- name: Install helm
+  become: true
+  ansible.builtin.apt:
+    name: helm
+    state: present

@@ -1,5 +1,13 @@
+---
 all:
   children:
+    ca_server:
+      hosts:
+        ca_server:
+          ansible_host: 127.0.0.1
+          ansible_port: 49930
+          ansible_user: onethird
+          ansible_private_key_file: ~/.lima/_config/user
     # Managed by Proxmox
     gitea:
     # Managed by Proxmox

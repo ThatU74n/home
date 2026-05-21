@@ -1,0 +1,15 @@
+---
+- name: Add Helm repository
+  kubernetes.core.helm_repository:
+    name: coredns
+    repo_url: https://coredns.github.io/helm 
+    state: present
+
+- name: Install CoreDNS 
+  kubernetes.core.helm:
+    name: coredns
+    chart_ref: coredns/coredns
+    kubeconfig: "{{ kubeconfig }}"
+    namespace: kube-system
+    create_namespace: false
+

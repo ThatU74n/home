@@ -1,0 +1,26 @@
+---
+argument_specs:
+  description:
+  short_description:
+  author:
+    - U74n
+  options:
+    cni_name:
+      type: str 
+      choices:
+        - calico
+        - cilium
+        - flannel
+      required: true
+
+    cni_installation_mode:
+      type: str 
+      choices:
+        - helm
+        - manifest
+      required: true
+
+    kubeconfig:
+      type: path
+      required: false 
+      default: "{{ ansible_facts['env']['HOME'] }}/.kube/config"

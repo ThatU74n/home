@@ -1,0 +1,92 @@
+# Bootstrap the cluster by executing these jobs:
+# - Generate a Kubeconfig 
+# - Taint  the control-plane
+# - Install a CNI plugin 
+# - Install CoreDNS 
+# - Configure hosts for CSI drivers 
+#
+# The Playbook is designed to run in CI environment. Therefore, Kubeconfig is intended to be lost after the job is done
+# To generate a new Kubeconfig, see role kubectl#kubeconfig.yaml 
+---
+
+# Call the CA Server to register CA certificate and key content as facts 
+- name: CA Register
+  hosts: ca_server
+  tasks:
+    - name: Register CA certificate and key content as facts
+      become: true
+      loop_control:
+        loop_var: ca 
+      loop:
+        - /etc/kubernetes/pki/ca.crt 
+        - /etc/kubernetes/pki/ca.key
+      register: ca_files_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ ca }}"
+  
+    - name: Set CA certificate and key content facts
+      ansible.builtin.set_fact:
+        kubernetes_ca_cert_content: >- 
+          "{{ (ca_files_content_slurp.results 
+              | selectattr('source', 'equalto', '/etc/kubernetes/pki/ca.crt') 
+              | map(attribute='content') 
+              | first
+              ) 
+            | b64decode }}"
+        kubernetes_ca_key_content: >-
+          "{{ (ca_files_content_slurp.results
+              | selectattr('source', 'equalto', '/etc/kubernetes/pki/ca.key') 
+              | map(attribute='content') 
+              | first
+              ) 
+            | b64decode }}"
+
+- name: Bootstrap Kubernetes 
+  hosts: localhost
+  vars:
+    kubernetes_ca_cert_content: "{{ hostvars[groups['ca_server'] | first]['kubernetes_ca_cert_content'] }}"
+    kubernetes_ca_key_content: "{{ hostvars[groups['ca_server'] | first]['kubernetes_ca_key_content'] }}"
+  tasks:
+    - name: Kubectl 
+      ansible.builtin.include_role:
+        name: kubectl
+      vars:
+        kubeconfig_not_after: "+1h"
+
+    - name: Helm 
+      ansible.builtin.include_role:
+        name: helm
+
+    - name: Taint control-plane 
+      kubernetes.core.k8s_taint:
+        kubeconfig: "{{ ansible_facts['env']['HOME'] }}/.kube/config"
+        name: control-plane
+        state: present
+        taints:
+          - key: node-role.kubernetes.io/control-plane
+            effect: NoSchedule
+          - key: node-role.kubernetes.io/master
+            effect: NoSchedule
+
+    - name: CNI plugin 
+      ansible.builtin.include_role:
+        name: cni 
+      vars:
+        kubeconfig: "{{ ansible_facts['env']['HOME'] }}/.kube/config"
+        cni_plugin: cilium
+        cni_installation_method: helm
+
+    - name: CoreDNS
+      ansible.builtin.include_role:
+        name: coredns 
+      vars:
+        kubeconfig: "{{ ansible_facts['env']['HOME'] }}/.kube/config"
+        coredns_installation_method: helm
+
+- name: Configure hosts 
+  hosts: "{{ groups['control_plane'] + groups['worker'] }}"
+  tasks:
+    - name: CSI Drivers configuration
+      ansible.builtin_include_role:
+        name: csi
+

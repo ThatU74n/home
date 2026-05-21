@@ -1,3 +1,5 @@
 ---
 _kubernetes_minor_version: "{{ kubernetes_version.split('.')[0:2] | join('.') }}"
+
+_kubernetes_first_control_plane_host: "{{ groups['control_plane'] | sort | first }}"
 _is_kubernetes_ca_server_in_inventory: "{{ kubernetes_ca_server in groups['all'] }}"

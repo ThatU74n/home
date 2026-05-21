@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    description: Install and configure Fail2ban
+    short_description: Install and configure Fail2ban
+    author: U74n
+    options:
+      fail2ban_jails:
+        type: list
+        elements: str 
+        description: List of Fail2ban jails to manage
+        required: false
+
+

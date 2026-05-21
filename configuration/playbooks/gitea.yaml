@@ -2,10 +2,6 @@
 - name: Configure Gitea on the server
   hosts: gitea
   tasks:
-    - name: Preconfigure virtual machine
-      ansible.builtin.import_role:
-        name: vm
-
     - name: Install Tailscale
       ansible.builtin.import_role:
         name: tailscale

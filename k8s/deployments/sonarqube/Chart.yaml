@@ -1,0 +1,9 @@
+---
+apiVersion: v3 
+name: SonarQube 
+version: 1.0.0
+description: Helm chart for deploying SonarQube with Cloud Native PG
+maintainers:
+  - name: U74n
+    email: utan.dev2358@gmail.com
+

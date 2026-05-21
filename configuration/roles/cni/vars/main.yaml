@@ -1,0 +1,23 @@
+_cni_name_map:
+  calico: calico
+  flannel: flannel
+  cilium: cilium
+
+_cni_name: "{{ _cni_name_map[cni_name] | default('flannel') }}"
+
+_cni_installation_mode_map:
+  helm: helm
+  manifest: manifest
+
+_cni_installation_mode: "{{ _cni_installation_mode_map[cni_installation_mode] | default('manifest') }}"
+
+
+
+
+
+_cilium_values:
+  kubeProxyReplacement: "true"
+  socketLB:
+    hostNamespaceOnly: "true"
+  k8sServiceHost: "{{ hostvars[groups['control_plane'] | sort | first]['ansible_host'] }}"
+  k8sServicePort: "6443"

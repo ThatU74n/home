@@ -1,0 +1,12 @@
+---
+- name: Install
+  ansible.builtin.import_tasks: install.yaml
+
+- name: Configure
+  ansible.builtin.import_tasks: configure.yaml 
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Deploy
+  ansible.builtin.import_tasks: deploy.yaml

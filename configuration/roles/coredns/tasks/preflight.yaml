@@ -1,0 +1,18 @@
+---
+- name: Check kubeconfig 
+  block:
+    - name: Check if kubeconfig file exists
+      register: kubeconfig_stat
+      ansible.builtin.stat:
+        path: "{{ kubeconfig }}"
+      failed_when: kubeconfig_stat.stat.exists == false
+   
+    - name: Check if kubeconfig can access the cluster
+      register: kubeconfig_access_check
+      kubernetes.core.k8s_info:
+        kind: Node 
+        kubeconfig: "{{ kubeconfig }}"
+  rescue:
+    - name: Fail if kubeconfig is missing or cannot access the cluster
+      ansible.builtin.fail:
+        msg: "Kubeconfig file is missing or cannot access the cluster. Please ensure kubeconfig is present and has correct permissions, or explicitly pass a valid kubeconfig path as variable."

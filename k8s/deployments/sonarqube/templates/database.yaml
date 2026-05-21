@@ -1,0 +1,10 @@
+---
+apiVersion: postgresql.cnpg.com/v1
+kind: Database
+metadata:
+  name: "{{ .Release.Name }}-sonarqube-db"
+spec:
+  cluster:
+    name: postgresql-cluster
+  name: sonarqube 
+  owner: "{{ .Values.database.user }}"

@@ -1,0 +1,7 @@
+---
+- name: Ensure Fail2ban is running
+  become: true
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: started
+    enabled: true

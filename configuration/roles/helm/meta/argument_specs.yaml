@@ -1,0 +1,7 @@
+---
+argument_specs:
+  main:
+    description: Install and configure Helm
+    short_description: Install and configure Helm
+    author:
+      - U74n

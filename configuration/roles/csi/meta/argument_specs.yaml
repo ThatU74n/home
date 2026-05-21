@@ -1,0 +1,20 @@
+---
+argument_specs:
+  main:
+    description: 
+      - Configure Node to be ready for CSI Driver installation
+      - The actual installation of CSI Driver will be handled by ArgoCD
+    short_description: Prerequisite CSI Driver installation
+    author:
+      - U74n
+    options:
+      csi_driver:
+        type: str 
+        description:
+          - "CSI Drivers to configure"
+          - "If not provided, It will not configure any CSI Driver"
+        required: false
+        choices:
+          - ""
+          - "longhorn"
+        default: "" 

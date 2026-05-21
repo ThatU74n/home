@@ -1,0 +1,22 @@
+---
+- name: Configure Certificate Authority
+  hosts: ca_server
+  tasks:
+    - name: Generate Etcd CA 
+      ansible.builtin.import_role:
+        name: certificate-authority
+      vars:
+        ca_key_path: /etc/etcd/pki/ca.key 
+        ca_cert_path: /etc/etcd/pki/ca.crt 
+        ca_common_name: Etcd CA
+
+    - name: Generate Kubernetes CA 
+      ansible.builtin.import_role:
+        name: certificate-authority
+      vars:
+        ca_key_path: /etc/kubernetes/pki/ca.key 
+        ca_cert_path: /etc/kubernetes/pki/ca.crt 
+        ca_common_name: Kubernetes CA
+
+
+

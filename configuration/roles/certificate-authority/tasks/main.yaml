@@ -1,0 +1,59 @@
+---
+- name: Install dependencies
+  become: true
+  ansible.builtin.package:
+    name:
+      - python3-cryptography
+    state: present
+
+- name: Ensure directories
+  become: true 
+  loop_control:
+    loop_var: ca_dir_path
+  loop:
+    - "{{ ca_key_path | dirname }}"
+    - "{{ ca_cert_path | dirname }}"
+  ansible.builtin.file:
+    path: "{{ ca_dir_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Generate CA key 
+  become: true
+  run_once: true
+  register: ca_key_result
+  community.crypto.openssl_privatekey:
+    path: "{{ ca_key_path }}"
+    size: 4096
+
+- name: Generate CA CSR 
+  become: true
+  run_once: true
+  changed_when: ca_key_result.changed
+  register: ca_csr_result
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ ca_key_path }}"
+    common_name: "{{ ca_common_name }}"
+    basic_constraints:
+      - "CA:TRUE"
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+      - cRLSign
+      - digitalSignature
+    key_usage_critical: true
+
+- name: Sign CA selfsigned certificate 
+  become: true
+  run_once: true
+  community.crypto.x509_certificate:
+    path: "{{ ca_cert_path }}"
+    privatekey_path: "{{ ca_key_path }}"
+    csr_content: "{{ ca_csr_result.csr }}"
+    provider: selfsigned 
+    selfsigned_digest: sha256
+
+
+

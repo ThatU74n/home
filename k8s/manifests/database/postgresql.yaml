@@ -1,0 +1,24 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-cluster
+spec:
+  instances: 3
+  storage:
+    size: 5Gi
+    storageClass: longhorn
+
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Pooler
+metadata:
+  name: postgresql-pooler
+spec:
+  cluster:
+    name: postgresql-cluster
+  instances: 2
+  type: rw
+  pgbouncer:
+    poolMode: transaction
+

@@ -1,2 +1,17 @@
 ---
+# Ansible variables
 ansible_user: k-u74n
+
+# Kubernetes variables
+kubernetes_version: 1.35.5
+etcd_version: 3.6.10
+
+etcd_pki_dir: /etc/etcd/pki 
+kubernetes_pki_dir: /etc/kubernetes/pki 
+kubernetes_static_pod_dir: /etc/kubernetes/manifests
+
+# Component variables 
+etcd_mode: staticpod 
+kube_apiserver_mode: staticpod
+kube_controller_manager_mode: staticpod 
+kube_scheduler_mode: staticpod

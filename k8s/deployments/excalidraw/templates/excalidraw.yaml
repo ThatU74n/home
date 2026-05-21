@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1 
+kind: Deployment 
+metadata:
+  name: "{{ .Release.Name }}-excalidraw"
+  labels:
+    app: excalidraw
+spec:
+  replicas: {{ .Values.excalidraw.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: excalidraw
+  template:
+    metadata:
+      labels:
+        app: excalidraw
+    spec:
+      containers:
+        - name: excalidraw
+          image: "{{ .Values.excalidraw.repository }}:{{ .Values.excalidraw.tag }}"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+          securityContext:
+            allowPrivilegeEscalation: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: nginx-cache
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-excalidraw"
+  labels:
+    app: excalidraw
+spec:
+  type: ClusterIP
+  selector:
+    app: excalidraw
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP

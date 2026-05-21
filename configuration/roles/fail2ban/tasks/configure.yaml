@@ -1,0 +1,47 @@
+---
+- name: Copy Fail2ban Service Drop-in
+  become: true
+  notify: Reload Systemd
+  ansible.builtin.template:
+    src: fail2ban.service-override.jinja
+    dest: /etc/systemd/system/fail2ban.service.d/override.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Register Current Jail 
+  register: current_jails
+  ansible.builtin.find:
+    path: /etc/fail2ban/jail.d/
+    file_type: file
+
+- name: Copy Fail2ban Jail
+  loop_control:
+    loop_var: jail 
+  loop: 
+    - "{{ fail2ban_jails }}"
+  become: true 
+  notify: Restart Fail2ban 
+  ansible.builtin.template:
+    src: "{{ jail }}.jinja"
+    dest: "/etc/fail2ban/jail.d/{{ jail }}"
+
+- name: Remove Unlisted Jails 
+  loop_control:
+    loop_var: unlisted_jail
+  loop: >-
+    "{{ current_jails.files
+      | map(attribute='path')
+      | map('basename') 
+      | list 
+      | difference(fail2ban_jails) 
+    }}"
+  become: true 
+  notify: Restart Fail2ban 
+  ansible.builtin.file:
+    path: "/etc/fail2ban/jail.d/{{ unlisted_jail.path }}"
+    state: absent 
+
+
+
+
