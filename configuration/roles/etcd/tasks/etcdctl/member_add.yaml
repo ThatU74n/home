@@ -1,0 +1,20 @@
+# Inform the cluster to add a new member
+# Call this task in a host to register etcd member to the current cluster
+# @params: Inherit from role
+# @return: None
+---
+- name: Add member
+  changed_when: false
+  ansible.builtin.command:
+    argv:
+      - etcdctl
+      - "--endpoints={{ _etcd_cluster_client_url }}"
+      - "--cacert={{ etcd_pki_dir }}/ca.crt"
+      - "--cert={{ etcd_pki_dir }}/client.crt"
+      - "--key={{ etcd_pki_dir }}/client.key"
+      - "-w"
+      - "json"
+      - member
+      - add
+      - "{{ inventory_hostname }}"
+      - "--peer-urls=https://{{ ansible_host }}:2380"

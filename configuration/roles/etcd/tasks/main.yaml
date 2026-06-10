@@ -1,5 +1,5 @@
 ---
-- name: Preflight 
+- name: Preflight
   ansible.builtin.import_tasks: preflight.yaml
 
 - name: Install
@@ -16,6 +16,3 @@
 
 - name: Deploy
   ansible.builtin.import_tasks: deploy.yaml
-
-- name: Postinstall
-  ansible.builtin.import_tasks: postinstall.yaml

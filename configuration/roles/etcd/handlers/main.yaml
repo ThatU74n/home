@@ -6,7 +6,7 @@
 
 - name: Restart Etcd
   become: true
-  when: _mode == "systemd"
+  when: etcd_mode == "systemd"
   ansible.builtin.systemd:
     name: etcd
     state: restarted

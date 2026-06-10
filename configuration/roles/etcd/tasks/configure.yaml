@@ -1,13 +1,34 @@
 ---
+- name: Check Existing Etcd cluster
+  ansible.builtin.import_tasks:
+    file: etcdctl/cluster_check.yaml
+
+- name: Debug
+  ansible.builtin.debug:
+    var: _etcd_is_config_lock
+
+- name: Inform new member if cluster exist
+  when:
+    - _etcd_cluster_exists
+    - not (
+        _etcd_wal_data.stat.exists or
+        _etcd_systemd_file.stat.exists or
+        _etcd_static_pod_file.stat.exists
+      )
+  ansible.builtin.include_tasks:
+    file: etcdctl/member_add.yaml
+
 - name: Copy configuration template
   become: true
-  when: _mode == "systemd"
+  when:
+    - etcd_mode == "systemd"
+    - not _etcd_is_config_lock or not _etcd_systemd_file.stat.exists
+  notify:
+    - Reload systemd
+    - Restart Etcd
   ansible.builtin.template:
     src: etcd.service.jinja
     dest: /etc/systemd/system/etcd.service
     owner: root
     group: root
     mode: "0644"
-  notify:
-    - Reload systemd
-    - Restart Etcd

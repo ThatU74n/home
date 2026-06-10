@@ -1,71 +1,68 @@
 ---
-# Ensure CA server exists 
-- name: Assert CA server exists 
-  when:
-    - etcd_ca_key_content is not truthy or etcd_ca_cert_content is not truthy
-    - not _is_etcd_ca_server_in_inventory
-  ansible.builtin.fail:
-     msg: "CA server is required to retrieve CA certificate and key"
+- name: Install dependencies
+  become: true
+  ansible.builtin.package:
+    name: "{{ _etcd_dependencies }}"
+    state: present
 
-# Set Etcd CA key
+# Set Etcd CA key, if not found create one at the first control plane
 - name: Set Etcd CA key
   when: etcd_ca_key_content is not truthy
-  delegate_to: "{{ etcd_ca_server }}"
-  become: true
   run_once: true
-  block:
-    - name: Slurp Etcd CA key content 
-      register: etcd_remote_ca_key_content_slurp
-      ansible.builtin.slurp:
-        src: "{{ etcd_remote_ca_key_path }}"
+  ansible.builtin.include_tasks:
+    file: util/slurp_or_create_ca_key.yaml
+  vars:
+    task_delegate_to: "{{ groups['control_plane'] | sort | first }}"
+    path: /etc/etcd/pki/ca.key
+    variable: etcd_ca_key_content
 
-    - name: Set Etcd CA key content fact
-      ansible.builtin.set_fact:
-        etcd_ca_key_content: "{{ etcd_remote_ca_key_content_slurp.content | b64decode }}"
-  rescue:
-    - name: Fail if Etcd CA key is missing
-      ansible.builtin.fail:
-        msg: "Etcd CA private key not found at {{ etcd_remote_ca_key_path }}. Please generate the CA private key or explicitly pass it as variable."
-          
-# Set Etcd CA certificate 
+# Set Etcd CA certificate, if not found create on at the first control plane
 - name: Set Etcd CA certificate
   when: etcd_ca_cert_content is not truthy
-  delegate_to: "{{ etcd_ca_server }}"
-  become: true
   run_once: true
-  block:
-    - name: Slurp Etcd CA certificate content
-      register: etcd_remote_ca_cert_content_slurp
-      ansible.builtin.slurp:
-        src: "{{ etcd_remote_ca_cert_path }}"
+  ansible.builtin.include_tasks:
+    file: util/slurp_or_create_ca_cert.yaml
+  vars:
+    task_delegate_to: "{{ groups['control_plane'] | sort | first }}"
+    path: /etc/etcd/pki/ca.crt
+    variable: etcd_ca_cert_content
+    ca_key_content: "{{ etcd_ca_key_content }}"
+    ca_common_name: Etcd CA
 
-    - name: Set Etcd CA certificate content fact
-      ansible.builtin.set_fact:
-        etcd_ca_cert_content: "{{ etcd_remote_ca_cert_content_slurp.content | b64decode }}"
-  rescue:
-    - name: Fail if Etcd CA certificate is missing
-      ansible.builtin.fail:
-        msg: "Etcd CA certificate not found at {{ etcd_remote_ca_cert_path }}. Please generate the CA certificate or explicitly pass it as variable."
-  
-# Gather service facts 
+# Gather service facts
 - name: Gather service facts
   become: true
   ansible.builtin.service_facts:
 
-# Ensure etcd_installation_dir is correctly set 
-- name: Assert etcd_installation_dir is correctly set
-  when:
-    - _mode == 'systemd'
-    - _is_systemd_and_etcd_installation_dir_blank
-  ansible.builtin.fail:
-    msg: "etcd_installation_dir is required when deployment mode is systemd."
+# Stat files for config lock mechanism
+- name: Stat systemd service
+  become: true
+  register: _etcd_systemd_file
+  ansible.builtin.stat:
+    path: /etc/systemd/system/etcd.service
 
-# Ensure kubernetes_installation_dir is correctly set 
-- name: Assert kubernetes_installation_dir is correctly set
-  when:
-    - _mode == 'systemd'
-    - _is_systemd_and_kubernetes_installation_dir_blank
+- name: Stat static pod manifest
+  become: true
+  register: _etcd_static_pod_file
+  ansible.builtin.stat:
+    path: "{{ etcd_static_pod_dir }}/etcd.yaml"
+
+- name: Stat WAL directory
+  become: true
+  register: _etcd_wal_data
+  ansible.builtin.stat:
+    path: /var/lib/etcd/member/wal
+
+# Ensure etcd_installation_dir is correctly set
+- name: Assert etcd_installation_dir is correctly set
+  when: _etcd_is_etcd_installation_dir_blank
   ansible.builtin.fail:
-    msg: "kubernetes_installation_dir is required when deployment mode is systemd."
-  
-  
+    msg: "etcd_installation_dir is required."
+
+# Ensure etcd_static_pod_dir is correctly set
+- name: Assert etcd_static_pod_dir is correctly set
+  when:
+    - etcd_mode == "staticpod"
+    - _etcd_is_etcd_static_pod_dir_blank
+  ansible.builtin.fail:
+    msg: "etcd_static_pod is required when deployment mode is staticpod."

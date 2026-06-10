@@ -1,0 +1,59 @@
+# Given a path, this role would slurp the content at that path
+# If not found, it will create a CA cert
+# @params:
+#   - task_delegate_to:           host to delegate to
+#   - path:                       path of the file to slurp
+#   - variable:                   var to set facts after slurping
+#   - ca_key_content:             the content of the CA key to sign a new cert in case cert not found
+#   - ca_common_name:             the common name of the new cert in case cert not found
+# @return:
+#   - set fact to variable:       str - CA cert content
+---
+- name: Slurp or create CA cert
+  delegate_to: "{{ task_delegate_to | default(omit) }}"
+  become: true
+  block:
+    - name: Slurp CA cert content
+      register: _etcd_internal_ca_cert
+      ansible.builtin.slurp:
+        src: "{{ path }}"
+  rescue:
+    - name: Ensure directory
+      become: true
+      ansible.builtin.file:
+        path: "{{ path | dirname }}"
+        state: directory
+        mode: "0755"
+
+    - name: Generate CA csr
+      become: true
+      register: _etcd_internal_ca_csr
+      community.crypto.openssl_csr_pipe:
+        privatekey_content: "{{ ca_key_content }}"
+        common_name: "{{ ca_common_name }}"
+        basic_constraints:
+          - "CA:TRUE"
+        basic_constraints_critical: true
+        key_usage:
+          - keyCertSign
+          - cRLSign
+          - digitalSignature
+        key_usage_critical: true
+
+    - name: Generate CA cert
+      become: true
+      community.crypto.x509_certificate:
+        path: "{{ path }}"
+        privatekey_content: "{{ ca_key_content }}"
+        csr_content: "{{ _etcd_internal_ca_csr.csr }}"
+        provider: selfsigned
+        selfsigned_digest: sha256
+
+    - name: Reslurp CA cert content
+      register: _etcd_internal_ca_cert
+      ansible.builtin.slurp:
+        src: "{{ path }}"
+  always:
+    - name: Set CA cert content fact
+      ansible.builtin.set_fact:
+        "{{ variable }}": "{{ _etcd_internal_ca_cert.content | default('') | b64decode }}"

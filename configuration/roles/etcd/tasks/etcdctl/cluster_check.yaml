@@ -1,0 +1,48 @@
+# Check cluster exist via endpoint health, get the current members
+# @params: Inherit from role
+# @return:
+#   - set fact _etcd_cluster_exists: bool   - whether cluster exists or not
+#   - set fact _etcd_member_list: []string  - list of current member
+---
+- name: Get endpoint health
+  changed_when: false
+  ignore_errors: true
+  register: _etcd_cluster_health_check
+  become: true
+  ansible.builtin.command:
+    argv:
+      - etcdctl
+      - "--endpoints={{ _etcd_cluster_client_url }}"
+      - "--cacert={{ etcd_pki_dir }}/ca.crt"
+      - "--cert={{ etcd_pki_dir }}/client.crt"
+      - "--key={{ etcd_pki_dir }}/client.key"
+      - "-w"
+      - "json"
+      - endpoint
+      - health
+
+- name: Get cluster member list
+  changed_when: false
+  ignore_errors: true
+  register: _etcd_cluster_member_list
+  become: true
+  ansible.builtin.command:
+    argv:
+      - etcdctl
+      - "--endpoints={{ _etcd_cluster_client_url }}"
+      - "--cacert={{ etcd_pki_dir }}/ca.crt"
+      - "--cert={{ etcd_pki_dir }}/client.crt"
+      - "--key={{ etcd_pki_dir }}/client.key"
+      - "-w"
+      - "json"
+      - member
+      - list
+
+- name: Set etcd_cluster_exists
+  ansible.builtin.set_fact:
+    _etcd_cluster_exists: "{{ _etcd_cluster_health_check.rc == 0 }}"
+
+- name: Set current memberlist
+  when: _etcd_cluster_exists
+  ansible.builtin.set_fact:
+    _etcd_member_list: "{{ (_etcd_cluster_member_list.stdout | from_json).members }}"

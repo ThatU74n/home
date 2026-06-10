@@ -15,25 +15,7 @@ spec:
       image: quay.io/coreos/etcd:v{{ etcd_version }}
       command:
         - etcd 
-        - --name={{ inventory_hostname }}
-        - --data-dir=/var/lib/etcd 
-        - --listen-client-urls=https://{{ _etcd_private_ip_address }}:2379,https://127.0.0.1:2379
-        - --advertise-client-urls=https://{{ _etcd_advertise_server_address }}:2379
-        - --listen-peer-urls=https://{{ ansible_host }}:2380
-        - --initial-advertise-peer-urls=https://{{ ansible_host }}:2380
-        - --listen-metrics-urls=http://127.0.0.1:2381
-        - --initial-cluster={% for host in groups['control_plane'] | sort %}{{ host }}=https://{{ hostvars[host]['ansible_host'] }}:2380{% if not loop.last %},{% endif %}{% endfor %}
-
-        - --initial-cluster-token=etcd-cluster-1
-        - --initial-cluster-state={{ 'existing' if etcd_exist else 'new' }}
-        - --cert-file=/etc/etcd/pki/server.crt
-        - --key-file=/etc/etcd/pki/server.key
-        - --trusted-ca-file=/etc/etcd/pki/ca.crt
-        - --client-cert-auth=true
-        - --peer-cert-file=/etc/etcd/pki/peer.crt
-        - --peer-key-file=/etc/etcd/pki/peer.key
-        - --peer-trusted-ca-file=/etc/etcd/pki/ca.crt
-        - --peer-client-cert-auth=true
+        {{ _etcd_static_pod_flags | indent(8) }}
       ports:
         - containerPort: 2379
           name: server

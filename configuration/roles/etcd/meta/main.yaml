@@ -1,17 +1,110 @@
 ---
 galaxy_info:
-  author: U74n
-  description: Install and configure Etcd cluster
-  min_ansible_version: 2.20
-  platforms:
-    - name: Debian
-      versions:
-        - 13        - Trixie
-        - 12        - Bookworm
-    - name: CentOS
-      versions:
-        - stream 10 - Coughlan
-    - name: Fedora
-      versions:
-        - 43
-        - 42
+  author: "U74n"
+  description: "Role to manage Etcd cluster, including install, configure and backup"
+  min_ansible_version: "2.20"
+  license: "MIT"
+argument_specs:
+  main:
+    author: "U74n"
+    description:
+      - "Install and configure Etcd standalone / cluster. Etcd is a strongly consistent, distributed key-value store."
+      - "This role assume you have obtained a CA pairs, you can provide the key cert by variables or leave a path to it on the CA server."
+      - "For systemd deployment binary file, it will be installed from https://storage.googleapis.com/etcd. You can specify the location to download"
+      - "the binary, see supported url https://github.com/etcd-io/etcd/releases."
+      - "For container-based deployment, the image will be pulled from quay.io/coreos/etcd."
+      - ""
+      - " * Hybrid cluster deployment is not supported"
+      - " * Documentation: https://etcd.io/docs"
+    short_description: "Install and configure Etcd"
+    options:
+      etcd_version:
+        type: str
+        description:
+          - "Etcd version to install"
+          - "See https://etcd.io for details"
+        required: true
+
+      etcd_mode:
+        type: str
+        description:
+          - "Etcd deployment mode. Deploy etcd instance as:"
+          - " - systemd         # deploy etcd as a systemd service"
+          - " - staticpod       # deploy etcd as a static pod (need Kubelet)"
+          - "Defaults to staticpod when omitted"
+        required: false
+        choices:
+          - systemd
+          - staticpod
+        default: staticpod
+
+      etcd_download_url:
+        type: str
+        description:
+          - "Etcd download URL. Only applicable to systemd deployment mode"
+          - "Defaults to https://storage.googleapis.com/etcd when omitted"
+          - "See https://github.com/etcd-io/etcd/releases for details"
+        required: false
+        default: https://storage.googleapis.com/etcd
+
+      etcd_static_pod_dir:
+        type: path
+        description:
+          - "Directory of static pods for Kubelet. Only applicable to static pod deployment mode"
+          - "Defaults to /etc/kubernetes/manifests when omitted"
+        required: false
+        default: /etc/kubernetes/manifests
+
+      etcd_installation_dir:
+        type: path
+        description:
+          - "Directory to install binary. Only applicable to systemd deployment mode"
+          - "Defaults to /usr/local/etcd when omitted"
+        required: false
+        default: /usr/local/etcd
+
+      etcd_pki_dir:
+        type: path
+        description:
+          - "Directory of Etcd PKI files"
+          - "Defaults to /etc/etcd/pki when omitted"
+        required: false
+        default: /etc/etcd/pki
+
+      etcd_advertise_server_address:
+        type: str
+        description:
+          - "Etcd cluster public advertised address. It is the address for external client to talk to the cluster"
+          - "Example: 192.168.1.2, etcd.example.com"
+          - "Defaults to IPv4 address of the host when omitted"
+        required: false
+        default: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+      etcd_advertise_peer_address:
+        type: str
+        description:
+          - "Etcd peer advertised address. It is the address that will talk to other peers in the cluster"
+          - "Example: 192.168.1.2, etcd.example.com"
+          - "Defaults to IPv4 address of the host when omitted"
+        required: false
+        default: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+      etcd_ca_cert_content:
+        type: str
+        description:
+          - "Etcd CA certificate content"
+          - "If not provide, it'll generate a new CA cert"
+        required: false
+
+      etcd_ca_key_content:
+        type: str
+        description:
+          - "Etcd CA private key content"
+          - "If not provided, it'll generate a new CA key"
+        required: false
+
+  backup:
+    author: U74n
+    description: abc
+    short_description: abc
+

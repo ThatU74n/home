@@ -1,19 +1,69 @@
 ---
-# Network variables 
+_etcd_dependencies:
+  - tar
+  - "{{ 'python3-cryptography' if ansible_facts['os_family'] != 'ArchLinux' else 'python-cryptography' }}"
+
+# Network variables
 _etcd_private_ip_address: "{{ ansible_facts['default_ipv4']['address'] }}"
 _etcd_advertise_server_address: "{{ etcd_advertise_server_address | default(ansible_facts['default_ipv4']['address']) }}"
 _etcd_advertise_peer_address: "{{ etcd_advertise_peer_address | default(ansible_facts['default_ipv4']['address']) }}"
+_etcd_cluster: >-
+  {%- if _etcd_cluster_exists -%}
+    {%- set peer_urls = [] -%}
+    {%- for member in _etcd_member_list -%}
+      {%- set _ = peer_urls.append(member.name ~ '=' ~ member.peerURLs[0]) -%}
+    {%- endfor -%}
 
-# Role variables
-_mode: >-
-  {%- set _mode_map = {
-    "staticpod": ["staticpod", "static-pod", "static_pod", "kubelet"],
-    "systemd": ["systemd", "systemd-service", "systemd_service", "binary"]
-  } -%}
-  {{ _mode_map | dict2items | selectattr('value', 'contains', etcd_mode) | map(attribute='key') | first }}
+    {%- if inventory_hostname not in (_etcd_member_list | map(attribute='name') | list) -%}
+      {%- set _ = peer_urls.append(inventory_hostname ~ '=https://' ~ ansible_host ~ ':2380') -%}
+    {%- endif -%}
+    {{ peer_urls | join(',') }}
+  {%- else -%}
+    {%- set cluster_parts = [] -%}
+    {%- for host in (groups['control_plane'] | sort) -%}
+      {%- set _ = cluster_parts.append(host ~ '=https://' ~ hostvars[host]['ansible_host'] ~ ':2380') -%}
+    {%- endfor -%}
+    {{ cluster_parts | join(',') }}
+  {%- endif %}
 
+# Discussion: implement discovery, could use a loadbalancer here
+_etcd_cluster_client_url: >-
+  {%- set address = hostvars[groups['control_plane'] | sort | first]['ansible_host'] -%}
+  https://{{ address }}:2379
 
-_is_systemd_and_etcd_installation_dir_blank: "{{ _mode == 'systemd' and (etcd_installation_dir is not truthy)}}"
-_is_staticpod_and_kubernetes_static_pod_dir_blank: "{{ _mode == 'staticpod' and (kubernetes_static_pod_dir is not truthy)}}"
-_is_etcd_ca_server_in_inventory: "{{ etcd_ca_server in groups['all'] }}"
+# etcd flags
+_etcd_flags: |
+  --name={{ inventory_hostname }}
+  --data-dir=/var/lib/etcd
+  --listen-client-urls=https://{{ _etcd_private_ip_address }}:2379,https://127.0.0.1:2379
+  --advertise-client-urls=https://{{ _etcd_advertise_server_address }}:2379
+  --listen-peer-urls=https://{{ ansible_host }}:2380
+  --initial-advertise-peer-urls=https://{{ ansible_host }}:2380
+  --listen-metrics-urls=http://127.0.0.1:2381
+  --initial-cluster={{ _etcd_cluster }}
+  --initial-cluster-token=etcd-cluster-1
+  --initial-cluster-state={{ 'existing' if _etcd_cluster_exists else 'new' }}
+  --cert-file=/etc/etcd/pki/server.crt
+  --key-file=/etc/etcd/pki/server.key
+  --trusted-ca-file=/etc/etcd/pki/ca.crt
+  --client-cert-auth=true
+  --peer-cert-file=/etc/etcd/pki/peer.crt
+  --peer-key-file=/etc/etcd/pki/peer.key
+  --peer-trusted-ca-file=/etc/etcd/pki/ca.crt
+  --peer-client-cert-auth=true
 
+_etcd_systemd_flags: "{{ _etcd_flags.splitlines() | join(' ') }}"
+_etcd_static_pod_flags: |-
+  {% for flag in _etcd_flags.splitlines() %}
+  - {{ flag }}
+  {% endfor %}
+
+# fast check utilities
+_etcd_is_etcd_installation_dir_blank: "{{ etcd_installation_dir is not truthy }}"
+_etcd_is_etcd_static_pod_dir_blank: "{{ etcd_static_pod_dir is not truthy }}"
+_etcd_is_config_lock: >-
+  {{ _etcd_cluster_exists and (
+      _etcd_systemd_file.stat.exists or
+      _etcd_static_pod_file.stat.exists
+    )
+  }}
