@@ -1,5 +1,5 @@
 ---
-apiVersion: v1 
+apiVersion: v1
 kind: Pod
 metadata:
   name: kube-apiserver
@@ -11,42 +11,18 @@ spec:
   hostNetwork: true
   priorityClassName: system-cluster-critical
   containers:
-    - name: kube-apiserver 
-      image: registry.k8s.io/kube-apiserver:v{{ kubernetes_version }}
+    - name: kube-apiserver
+      image: registry.k8s.io/kube-apiserver:v{{ kube_apiserver_version }}
       command:
         - kube-apiserver
-        - --bind-address=0.0.0.0
-        - --secure-port=6443
-        - --advertise-address={{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }}
-        - --allow-privileged=true
-        - --authorization-mode=Node,RBAC
-        - --enable-admission-plugins=NodeRestriction
-        - --encryption-provider-config=/etc/kubernetes/encryption-config.yaml
-        - --storage-backend={{ kube_apiserver_storage_backend }}
-        - --kubelet-preferred-address-types=InternalIP,ExternalDNS,ExternalIP,Hostname
-        - --service-cluster-ip-range={{ kube_service_cluster_ip_range }}
-        - --etcd-servers={% for host in groups['control_plane'] | sort %}https://{{ hostvars[host]['ansible_host'] }}:2379{% if not loop.last %},{% endif %}{% endfor %}
-
-        - --etcd-cafile=/etc/etcd/pki/ca.crt
-        - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt 
-        - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
-        - --client-ca-file=/etc/kubernetes/pki/ca.crt 
-        - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt 
-        - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key 
-        - --kubelet-certificate-authority=/etc/kubernetes/pki/ca.crt 
-        - --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt 
-        - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
-        - --service-account-key-file=/etc/kubernetes/pki/service-account.pub
-        - --service-account-signing-key-file=/etc/kubernetes/pki/service-account.key
-        - --service-account-issuer=https://kubernetes.default.svc
-        - -v=2 
+        {{ _kube_apiserver_static_pod_flags | indent(8) }}
       volumeMounts:
         - name: kubernetes-encryption-config
           mountPath: /etc/kubernetes/encryption-config.yaml
           readOnly: true
         - name: kubernetes-pki
           mountPath: /etc/kubernetes/pki
-          readOnly: true 
+          readOnly: true
         - name: etcd-pki
           mountPath: /etc/etcd/pki
           readOnly: true
@@ -54,17 +30,15 @@ spec:
         - containerPort: 6443
           hostPort: 6443
   volumes:
-    - name: kubernetes-pki 
+    - name: kubernetes-pki
       hostPath:
-        path: {{ kubernetes_pki_dir }} 
-        type: Directory 
+        path: {{ kube_apiserver_pki_dir }}
+        type: Directory
     - name: etcd-pki
       hostPath:
-        path: {{ etcd_pki_dir }}
+        path: {{ kube_apiserver_etcd_pki_dir }}
         type: Directory
     - name: kubernetes-encryption-config
       hostPath:
         path: /etc/kubernetes/encryption-config.yaml
         type: File
-
-

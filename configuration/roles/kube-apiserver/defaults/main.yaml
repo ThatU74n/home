@@ -1,25 +1,13 @@
 ---
-# Version
-kubernetes_version: 1.35.5
-kube_apiserver_checksum:
-kube_apiserver_mode: staticpod 
-# Paths 
-kubernetes_installation_dir: /usr/local/kubernetes 
-kubernetes_static_pod_dir: /etc/kubernetes/manifests
-kubernetes_pki_dir: /etc/kubernetes/pki
-etcd_pki_dir: /etc/etcd/pki
-# Network 
+kube_apiserver_version: 1.35.4
+kube_apiserver_mode: staticpod
+kube_apiserver_installation_dir: /usr/local/kubernetes
+kube_apiserver_static_pod_dir: /etc/kubernetes/manifests
+kube_apiserver_pki_dir: /etc/kubernetes/pki
+kube_apiserver_etcd_pki_dir: /etc/etcd/pki
 kube_service_cluster_ip_range: 10.32.0.0/24
-# PKI 
-kubernetes_ca_cert_content:
-kubernetes_ca_key_content:
-kubernetes_ca_server: "{{ groups['control_plane'] | sort | first }}"
-kubernetes_remote_ca_cert_path: /etc/kubernetes/pki/ca.crt
-kubernetes_remote_ca_key_path: /etc/kubernetes/pki/ca.key
-etcd_ca_cert_content:
-etcd_ca_key_content:
-etcd_ca_server: "{{ groups['control_plane'] | sort | first }}"
-etcd_remote_ca_cert_path: /etc/etcd/pki/ca.crt
-etcd_remote_ca_key_path: /etc/etcd/pki/ca.key
-# Other
+kube_apiserver_ca_cert_content:
+kube_apiserver_ca_key_content:
+kube_apiserver_etcd_ca_cert_content:
+kube_apiserver_etcd_ca_key_content:
 kube_apiserver_storage_backend: etcd3

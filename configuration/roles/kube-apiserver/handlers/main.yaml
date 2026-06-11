@@ -6,7 +6,7 @@
 
 - name: Restart Kube-apiserver
   become: true
-  when: _mode == "systemd"
+  when: kube_apiserver_mode == "systemd"
   ansible.builtin.systemd:
     name: kube-apiserver
     state: restarted

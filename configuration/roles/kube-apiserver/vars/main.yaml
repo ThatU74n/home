@@ -1,14 +1,68 @@
 ---
-_mode_map:
-  staticpod: ["staticpod", "static-pod", "static_pod", "kubelet"]
-  systemd: ["systemd", "systemd-service", "systemd_service", "binary"]
+_kube_apiserver_dependencies:
+  - "{{ 'python3-cryptography' if ansible_facts['os_family'] != 'ArchLinux' else 'python-cryptography' }}"
 
-_mode: "{{ _mode_map | dict2items | selectattr('value', 'contains', kube_apiserver_mode) | map(attribute='key') | first }}"
+# Network variables
+_kube_apiserver_advertise_address: "{{ ansible_facts['default_ipv4']['address'] }}"
 
-_is_systemd_and_kubernetes_installation_dir_blank: "{{ _mode == 'systemd' and (kubernetes_installation_dir is not truthy)}}"
-_is_staticpod_and_kubernetes_static_pod_dir_blank: "{{ _mode == 'staticpod' and (kubernetes_static_pod_dir is not truthy)}}"
-_is_kubernetes_ca_server_in_inventory: "{{ kubernetes_ca_server in groups['all'] }}"
-_is_etcd_ca_server_in_inventory: "{{ etcd_ca_server in groups['all'] }}"
+_kube_apiserver_apiserver_san: >-
+  {{ [
+    "IP:" + ansible_facts['default_ipv4']['address'],
+    "IP:127.0.0.1",
+    "IP:10.32.0.1",
+    "DNS:" + inventory_hostname,
+    "DNS:localhost",
+    "DNS:kubernetes",
+    "DNS:kubernetes.default",
+    "DNS:kubernetes.default.svc",
+    "DNS:kubernetes.default.svc.cluster",
+    "DNS:kubernetes.default.svc.cluster.local"
+  ] + (
+    ['IP:' + ansible_facts['tailscale0']['ipv4_address']]
+    if 'tailscale0' in ansible_facts.get('interfaces', [])
+    else []
+  ) }}
 
+_kube_apiserver_etcd_servers: >-
+  {%- set servers = [] -%}
+  {%- for host in groups['control_plane'] | sort -%}
+    {%- set _ = servers.append('https://' ~ hostvars[host]['ansible_facts']['default_ipv4']['address'] ~ ':2379') -%}
+  {%- endfor -%}
+  {{ servers | join(',') }}
 
+# kube-apiserver flags
+_kube_apiserver_flags: |
+  --bind-address=0.0.0.0
+  --secure-port=6443
+  --advertise-address={{ _kube_apiserver_advertise_address }}
+  --allow-privileged=true
+  --authorization-mode=Node,RBAC
+  --enable-admission-plugins=NodeRestriction
+  --encryption-provider-config=/etc/kubernetes/encryption-config.yaml
+  --storage-backend={{ kube_apiserver_storage_backend }}
+  --kubelet-preferred-address-types=InternalIP,ExternalDNS,ExternalIP,Hostname
+  --service-cluster-ip-range={{ kube_service_cluster_ip_range }}
+  --etcd-servers={{ _kube_apiserver_etcd_servers }}
+  --etcd-cafile={{ kube_apiserver_etcd_pki_dir }}/ca.crt
+  --etcd-certfile={{ kube_apiserver_pki_dir }}/apiserver-etcd-client.crt
+  --etcd-keyfile={{ kube_apiserver_pki_dir }}/apiserver-etcd-client.key
+  --client-ca-file={{ kube_apiserver_pki_dir }}/ca.crt
+  --tls-cert-file={{ kube_apiserver_pki_dir }}/apiserver.crt
+  --tls-private-key-file={{ kube_apiserver_pki_dir }}/apiserver.key
+  --kubelet-certificate-authority={{ kube_apiserver_pki_dir }}/ca.crt
+  --kubelet-client-certificate={{ kube_apiserver_pki_dir }}/apiserver-kubelet-client.crt
+  --kubelet-client-key={{ kube_apiserver_pki_dir }}/apiserver-kubelet-client.key
+  --service-account-key-file={{ kube_apiserver_pki_dir }}/service-account.pub
+  --service-account-signing-key-file={{ kube_apiserver_pki_dir }}/service-account.key
+  --service-account-issuer=https://kubernetes.default.svc
+  -v=2
 
+_kube_apiserver_systemd_flags: "{{ _kube_apiserver_flags.splitlines() | join(' ') }}"
+_kube_apiserver_static_pod_flags: |-
+  {% for flag in _kube_apiserver_flags.splitlines() %}
+  - {{ flag }}
+  {% endfor %}
+
+# utility checks
+_kube_apiserver_is_installation_dir_blank: "{{ kube_apiserver_installation_dir is not truthy }}"
+_kube_apiserver_is_static_pod_dir_blank: "{{ kube_apiserver_static_pod_dir is not truthy }}"

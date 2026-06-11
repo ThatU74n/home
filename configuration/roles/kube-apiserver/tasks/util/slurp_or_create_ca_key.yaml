@@ -1,0 +1,39 @@
+# Given a path, this role would slurp the content at that path
+# If not found, it will create a CA key
+# @params:
+#   - task_delegate_to:           host to delegate to
+#   - path:                       path of the file to slurp
+#   - variable:                   var to set facts after slurping
+# @return:
+#   - set fact to variable:       str - CA key content
+---
+- name: Slurp or create CA key
+  delegate_to: "{{ task_delegate_to | default(omit) }}"
+  become: true
+  block:
+    - name: Slurp CA key content
+      register: _kube_apiserver_internal_ca_key
+      ansible.builtin.slurp:
+        src: "{{ path }}"
+  rescue:
+    - name: Ensure directory
+      become: true
+      ansible.builtin.file:
+        path: "{{ path | dirname }}"
+        state: directory
+        mode: "0755"
+
+    - name: Generate CA key
+      become: true
+      community.crypto.openssl_privatekey:
+        path: "{{ path }}"
+        size: 4096
+
+    - name: Reslurp CA key content
+      register: _kube_apiserver_internal_ca_key
+      ansible.builtin.slurp:
+        src: "{{ path }}"
+  always:
+    - name: Set CA key content fact
+      ansible.builtin.set_fact:
+        "{{ variable }}": "{{ _kube_apiserver_internal_ca_key.content | default('') | b64decode }}"

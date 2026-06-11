@@ -15,13 +15,13 @@ _etcd_cluster: >-
     {%- endfor -%}
 
     {%- if inventory_hostname not in (_etcd_member_list | map(attribute='name') | list) -%}
-      {%- set _ = peer_urls.append(inventory_hostname ~ '=https://' ~ ansible_host ~ ':2380') -%}
+      {%- set _ = peer_urls.append(inventory_hostname ~ '=https://' ~ _etcd_private_ip_address ~ ':2380') -%}
     {%- endif -%}
     {{ peer_urls | join(',') }}
   {%- else -%}
     {%- set cluster_parts = [] -%}
     {%- for host in (groups['control_plane'] | sort) -%}
-      {%- set _ = cluster_parts.append(host ~ '=https://' ~ hostvars[host]['ansible_host'] ~ ':2380') -%}
+      {%- set _ = cluster_parts.append(host ~ '=https://' ~ hostvars[host]['ansible_facts']['default_ipv4']['address'] ~ ':2380') -%}
     {%- endfor -%}
     {{ cluster_parts | join(',') }}
   {%- endif %}
@@ -37,8 +37,8 @@ _etcd_flags: |
   --data-dir=/var/lib/etcd
   --listen-client-urls=https://{{ _etcd_private_ip_address }}:2379,https://127.0.0.1:2379
   --advertise-client-urls=https://{{ _etcd_advertise_server_address }}:2379
-  --listen-peer-urls=https://{{ ansible_host }}:2380
-  --initial-advertise-peer-urls=https://{{ ansible_host }}:2380
+  --listen-peer-urls=https://{{ _etcd_advertise_peer_address }}:2380
+  --initial-advertise-peer-urls=https://{{ _etcd_advertise_peer_address }}:2380
   --listen-metrics-urls=http://127.0.0.1:2381
   --initial-cluster={{ _etcd_cluster }}
   --initial-cluster-token=etcd-cluster-1

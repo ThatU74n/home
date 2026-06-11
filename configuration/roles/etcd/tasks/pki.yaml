@@ -13,15 +13,15 @@
 # Generate key cert pair - As a Server / KVStore of Etcd cluster
 - name: Generate server key
   become: true
-  register: etcd_key
+  register: _etcd_key
   community.crypto.openssl_privatekey:
     path: "{{ etcd_pki_dir }}/server.key"
     size: 2048
 
 - name: Generate CSR for Etcd
   become: true
-  register: etcd_csr
-  changed_when: etcd_key.changed
+  register: _etcd_csr
+  changed_when: _etcd_key.changed
   community.crypto.openssl_csr_pipe:
     privatekey_path: "{{ etcd_pki_dir }}/server.key"
     common_name: "etcd"
@@ -35,7 +35,7 @@
   become: true
   community.crypto.x509_certificate:
     path: "{{ etcd_pki_dir }}/server.crt"
-    csr_content: "{{ etcd_csr.csr }}"
+    csr_content: "{{ _etcd_csr.csr }}"
     provider: ownca
     ownca_content: "{{ etcd_ca_cert_content }}"
     ownca_privatekey_content: "{{ etcd_ca_key_content }}"
@@ -43,15 +43,15 @@
 # Generate key cert pair - As a Peer node in Etcd cluster
 - name: Generate Etcd peer key
   become: true
-  register: etcd_peer_key
+  register: _etcd_peer_key
   community.crypto.openssl_privatekey:
     path: "{{ etcd_pki_dir }}/peer.key"
     size: 2048
 
 - name: Generate CSR for Etcd peer
   become: true
-  register: etcd_peer_csr
-  changed_when: etcd_peer_key.changed
+  register: _etcd_peer_csr
+  changed_when: _etcd_peer_key.changed
   community.crypto.openssl_csr_pipe:
     privatekey_path: "{{ etcd_pki_dir }}/peer.key"
     common_name: "{{ inventory_hostname }}-etcd"
@@ -65,7 +65,7 @@
   become: true
   community.crypto.x509_certificate:
     path: "{{ etcd_pki_dir }}/peer.crt"
-    csr_content: "{{ etcd_peer_csr.csr }}"
+    csr_content: "{{ _etcd_peer_csr.csr }}"
     provider: ownca
     ownca_content: "{{ etcd_ca_cert_content }}"
     ownca_privatekey_content: "{{ etcd_ca_key_content }}"
@@ -73,15 +73,15 @@
 # Genearte key cert pair - As a client that talk to Etcd cluster (for etcdctl uses)
 - name: Generate Etcd client key
   become: true
-  register: etcd_client_key
+  register: _etcd_client_key
   community.crypto.openssl_privatekey:
     path: "{{ etcd_pki_dir }}/client.key"
     size: 2048
 
 - name: Generate CSR for Etcd client
   become: true
-  register: etcd_client_csr
-  changed_when: etcd_client_key.changed
+  register: _etcd_client_csr
+  changed_when: _etcd_client_key.changed
   community.crypto.openssl_csr_pipe:
     privatekey_path: "{{ etcd_pki_dir }}/client.key"
     common_name: "{{ inventory_hostname }}-etcd-client"
@@ -90,7 +90,7 @@
   become: true
   community.crypto.x509_certificate:
     path: "{{ etcd_pki_dir }}/client.crt"
-    csr_content: "{{ etcd_client_csr.csr }}"
+    csr_content: "{{ _etcd_client_csr.csr }}"
     provider: ownca
     ownca_content: "{{ etcd_ca_cert_content }}"
     ownca_privatekey_content: "{{ etcd_ca_key_content }}"

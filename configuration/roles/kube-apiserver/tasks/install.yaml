@@ -1,25 +1,25 @@
 ---
-- name: Ensure Kubernetes diretory 
-  become: true 
+- name: Ensure Kubernetes directory
+  become: true
   loop_control:
     loop_var: kubernetes_directory
   loop:
-    - "{{ kubernetes_installation_dir if _mode == 'systemd' else omit }}"
-    - "{{ kubernetes_pki_dir }}"
-    - "{{ kubernetes_static_pod_dir if _mode == 'staticpod' else omit }}"
+    - "{{ kube_apiserver_installation_dir if kube_apiserver_mode == 'systemd' else omit }}"
+    - "{{ kube_apiserver_pki_dir }}"
+    - "{{ kube_apiserver_static_pod_dir if kube_apiserver_mode == 'staticpod' else omit }}"
   ansible.builtin.file:
     path: "{{ kubernetes_directory }}"
-    state: directory 
+    state: directory
     owner: root
     group: root
     mode: "0755"
 
 - name: Download Kube-apiserver binary
   become: true
-  when: _mode == "systemd"
+  when: kube_apiserver_mode == "systemd"
   ansible.builtin.get_url:
-    url: "https://dl.k8s.io/v{{ kubernetes_version }}/bin/linux/amd64/kube-apiserver"
-    dest: "{{ kubernetes_installation_dir }}/kube-apiserver-{{ kubernetes_version }}"
+    url: "https://dl.k8s.io/v{{ kube_apiserver_version }}/bin/linux/amd64/kube-apiserver"
+    dest: "{{ kube_apiserver_installation_dir }}/kube-apiserver-{{ kube_apiserver_version }}"
     checksum: "sha256:{{ kube_apiserver_checksum }}"
     owner: root
     group: root
@@ -27,9 +27,9 @@
 
 - name: Symlink Kube-apiserver binary
   become: true
-  when: _mode == "systemd"
+  when: kube_apiserver_mode == "systemd"
   ansible.builtin.file:
-    src: "{{ kubernetes_installation_dir }}/kube-apiserver-{{ kubernetes_version }}"
+    src: "{{ kube_apiserver_installation_dir }}/kube-apiserver-{{ kube_apiserver_version }}"
     dest: /usr/local/bin/kube-apiserver
     state: link
   notify:

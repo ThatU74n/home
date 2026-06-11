@@ -8,8 +8,9 @@ argument_specs:
   main:
     author: "U74n"
     description:
-      - "Install and configure Etcd standalone / cluster. Etcd is a strongly consistent, distributed key-value store."
-      - "This role assume you have obtained a CA pairs, you can provide the key cert by variables or leave a path to it on the CA server."
+      - "Install and configure Etcd standalone or as part of a cluster"
+      - "Etcd is a strongly consistent, distributed key - value store"
+      - "You can supply your own PKI key pairs as variables, or let the role provision them"
       - "For systemd deployment binary file, it will be installed from https://storage.googleapis.com/etcd. You can specify the location to download"
       - "the binary, see supported url https://github.com/etcd-io/etcd/releases."
       - "For container-based deployment, the image will be pulled from quay.io/coreos/etcd."
@@ -30,7 +31,7 @@ argument_specs:
         description:
           - "Etcd deployment mode. Deploy etcd instance as:"
           - " - systemd         # deploy etcd as a systemd service"
-          - " - staticpod       # deploy etcd as a static pod (need Kubelet)"
+          - " - staticpod       # deploy etcd as a static pod (requires Kubelet)"
           - "Defaults to staticpod when omitted"
         required: false
         choices:
@@ -66,7 +67,11 @@ argument_specs:
       etcd_pki_dir:
         type: path
         description:
-          - "Directory of Etcd PKI files"
+          - "Directory to store Etcd PKI files, including:"
+          - " - Server certificate and key"
+          - " - Peer certificate and key"
+          - " - Client certificate and key"
+          - "Kube API server client key pairs may not be the same as the Client pairs here, and thus be managed in it own role"
           - "Defaults to /etc/etcd/pki when omitted"
         required: false
         default: /etc/etcd/pki
@@ -93,7 +98,7 @@ argument_specs:
         type: str
         description:
           - "Etcd CA certificate content"
-          - "If not provide, it'll generate a new CA cert"
+          - "If not provide, it'll generate a new CA certificate"
         required: false
 
       etcd_ca_key_content:
@@ -102,9 +107,3 @@ argument_specs:
           - "Etcd CA private key content"
           - "If not provided, it'll generate a new CA key"
         required: false
-
-  backup:
-    author: U74n
-    description: abc
-    short_description: abc
-

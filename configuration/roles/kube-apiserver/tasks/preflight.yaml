@@ -1,133 +1,90 @@
 ---
-# Ensure CA servers exists
-- name: Assert Kubernetes CA server exists 
+- name: Install dependencies
+  become: true
+  ansible.builtin.package:
+    name: "{{ _kube_apiserver_dependencies }}"
+    state: present
+
+# Set Kubernetes CA key, if not found create one at the first control plane
+- name: Set Kubernetes CA key
+  when: kube_apiserver_ca_key_content is not truthy
+  run_once: true
+  ansible.builtin.include_tasks:
+    file: util/slurp_or_create_ca_key.yaml
+  vars:
+    task_delegate_to: "{{ groups['control_plane'] | sort | first }}"
+    path: "{{ kube_apiserver_pki_dir }}/ca.key"
+    variable: kube_apiserver_ca_key_content
+
+# Set Kubernetes CA certificate, if not found create one at the first control plane
+- name: Set Kubernetes CA certificate
+  when: kube_apiserver_ca_cert_content is not truthy
+  run_once: true
+  ansible.builtin.include_tasks:
+    file: util/slurp_or_create_ca_cert.yaml
+  vars:
+    task_delegate_to: "{{ groups['control_plane'] | sort | first }}"
+    path: "{{ kube_apiserver_pki_dir }}/ca.crt"
+    variable: kube_apiserver_ca_cert_content
+    ca_key_content: "{{ kube_apiserver_ca_key_content }}"
+    ca_common_name: Kubernetes CA
+
+# Set Etcd CA key, if not found create one at the first control plane
+- name: Set Etcd CA key
+  when: kube_apiserver_etcd_ca_key_content is not truthy
+  run_once: true
+  ansible.builtin.include_tasks:
+    file: util/slurp_or_create_ca_key.yaml
+  vars:
+    task_delegate_to: "{{ groups['control_plane'] | sort | first }}"
+    path: "{{ kube_apiserver_etcd_pki_dir }}/ca.key"
+    variable: kube_apiserver_etcd_ca_key_content
+
+# Set Etcd CA certificate, if not found create one at the first control plane
+- name: Set Etcd CA certificate
+  when: kube_apiserver_etcd_ca_cert_content is not truthy
+  run_once: true
+  ansible.builtin.include_tasks:
+    file: util/slurp_or_create_ca_cert.yaml
+  vars:
+    task_delegate_to: "{{ groups['control_plane'] | sort | first }}"
+    path: "{{ kube_apiserver_etcd_pki_dir }}/ca.crt"
+    variable: kube_apiserver_etcd_ca_cert_content
+    ca_key_content: "{{ kube_apiserver_etcd_ca_key_content }}"
+    ca_common_name: Etcd CA
+
+# Fetch Kube API server checksum
+- name: Fetch Kube API server checksum
   when:
-    - kubernetes_ca_key_content is not truthy or kubernetes_ca_cert_content is not truthy
-    - not _is_kubernetes_ca_server_in_inventory
-  ansible.builtin.fail:
-     msg: "CA server is required to retrieve CA certificate and key"
-
-- name: Assert Etcd CA server exists 
-  when:
-    - etcd_ca_key_content is not truthy or etcd_ca_cert_content is not truthy
-    - not _is_etcd_ca_server_in_inventory
-  ansible.builtin.fail:
-     msg: "CA server is required to retrieve CA certificate and key"
-
-# Set Kubernetes CA certificate
-- name: Set Kubernetes CA certificate  
-  when: kubernetes_ca_cert_content is not truthy
-  delegate_to: "{{ kubernetes_ca_server }}"
-  become: true
-  run_once: true
-  block:
-    - name: Slurp Kubernetes CA certificate content
-      register: kubernetes_remote_ca_cert_content_slurp
-      ansible.builtin.slurp:
-        src: "{{ kubernetes_remote_ca_cert_path }}"
-
-    - name: Set Kubernetes CA certificate content fact
-      ansible.builtin.set_fact:
-        kubernetes_ca_cert_content: "{{ kubernetes_remote_ca_cert_content_slurp.content | b64decode }}"
-  rescue:
-      - name: Fail if Kubernetes CA certificate is missing
-        ansible.builtin.fail:
-          msg: "Kubernetes CA certificate not found at {{ kubernetes_remote_ca_cert_path }}. Please generate the CA certificate or explicitly pass it as variable."
-
-# Set Kubernetes CA private key
-- name: Set Kubernetes CA private key 
-  when: kubernetes_ca_key_content is not truthy
-  delegate_to: "{{ kubernetes_ca_server }}"
-  become: true
-  run_once: true
-  block:
-    - name: Slurp Kubernetes CA private key content
-      register: kubernetes_remote_ca_key_content_slurp
-      ansible.builtin.slurp:
-        src: "{{ kubernetes_remote_ca_key_path }}"
-
-    - name: Set Kubernetes CA private key content fact 
-      ansible.builtin.set_fact:
-        kubernetes_ca_key_content: "{{ kubernetes_remote_ca_key_content_slurp.content | b64decode }}"
-  rescue:
-      - name: Fail if Kubernetes CA private key is missing
-        ansible.builtin.fail:
-          msg: "Kubernetes CA private key not found at {{ kubernetes_remote_ca_key_path }}. Please generate the CA private key or explicitly pass it as variable."
-
-# Set Etcd CA certificate 
-- name: Set Etcd CA certificate 
-  when: etcd_ca_cert_content is not truthy
-  delegate_to: "{{ etcd_ca_server }}"
-  become: true
-  run_once: true
-  block:
-    - name: Slurp Etcd CA certificate content
-      register: etcd_remote_ca_cert_content_slurp
-      ansible.builtin.slurp:
-        src: "{{ etcd_remote_ca_cert_path }}" 
-
-    - name: Set Etcd CA certificate content fact 
-      ansible.builtin.set_fact:
-        etcd_ca_cert_content: "{{ etcd_remote_ca_cert_content_slurp.content | b64decode }}"
-  rescue:
-      - name: Fail if Etcd CA certificate is missing
-        ansible.builtin.fail:
-          msg: "Etcd CA certificate not found at {{ etcd_remote_ca_cert_path }}. Please install Etcd first to generate the CA certificate or explicitly pass it as variable."
-
-# Set Etcd CA private key 
-- name: Set Etcd CA private key 
-  when: etcd_ca_key_content | default('') == ''
-  delegate_to: "{{ etcd_ca_server }}"
-  become: true
-  run_once: true
-  block:
-    - name: Slurp Etcd CA private key content
-      register: etcd_remote_ca_key_content_slurp
-      ansible.builtin.slurp:
-        src: "{{ etcd_remote_ca_key_path }}"
-
-    - name: Set Etcd CA private key content fact 
-      ansible.builtin.set_fact:
-        etcd_ca_key_content: "{{ etcd_remote_ca_key_content_slurp.content | b64decode }}"
-  rescue:
-      - name: Fail if Etcd CA private key is missing
-        ansible.builtin.fail:
-          msg: "Etcd CA private key not found at {{ etcd_remote_ca_key_path }}. Please install Etcd first to generate the CA private key or explicitly pass it as variable."
-
-# Fetch Kube-apiserver checksum
-- name: Fetch Kube-apiserver checksum
-  when:
-    - _mode == "systemd"
+    - kube_apiserver_mode == "systemd"
     - not kube_apiserver_checksum
   block:
-    - name: Get Kube-apiserver checksum
+    - name: Get Kube API server checksum
       changed_when: false
-      register: kube_apiserver_checksum_result
+      register: _kube_apiserver_checksum_result
       ansible.builtin.uri:
-        url: "https://dl.k8s.io/v{{ kubernetes_version }}/bin/linux/amd64/kube-apiserver.sha256"
+        url: "https://dl.k8s.io/v{{ kube_apiserver_version }}/bin/linux/amd64/kube-apiserver.sha256"
         return_content: true
 
-    - name: Set Kube-apiserver checksum fact
+    - name: Set Kube API server checksum fact
       ansible.builtin.set_fact:
-        kube_apiserver_checksum: "{{ kube_apiserver_checksum_result.content }}"
+        kube_apiserver_checksum: "{{ _kube_apiserver_checksum_result.content }}"
 
-# Gather service facts 
+# Gather service facts
 - name: Gather service facts
-  become: true 
+  become: true
   ansible.builtin.service_facts:
 
-# Ensure kubernetes_installation_dir is correctly set 
-- name: Assert kubernetes_installation_dir is correctly set 
-  when: 
-    - _mode == 'systemd'
-    - _is_systemd_and_kubernetes_installation_dir_blank
+# Ensure kube_apiserver_installation_dir is correctly set
+- name: Assert kube_apiserver_installation_dir is correctly set
+  when: _kube_apiserver_is_installation_dir_blank
   ansible.builtin.fail:
-    msg: "kubernetes_installation_dir is required when deployment mode is systemd."
+    msg: "kube_apiserver_installation_dir is required."
 
-# Ensure kubernetes_static_pod_dir is correctly set 
-- name: Assert kubernetes_static_pod_dir is correctly set 
-  when: 
-    - _mode == 'staticpod'
-    - _is_staticpod_and_kubernetes_static_pod_dir_blank
+# Ensure kube_apiserver_static_pod_dir is correctly set
+- name: Assert kube_apiserver_static_pod_dir is correctly set
+  when:
+    - kube_apiserver_mode == 'staticpod'
+    - _kube_apiserver_is_static_pod_dir_blank
   ansible.builtin.fail:
-    msg: "kubernetes_static_pod_dir is required when deployment mode is staticpod."
+    msg: "kube_apiserver_static_pod_dir is required when deployment mode is staticpod."
