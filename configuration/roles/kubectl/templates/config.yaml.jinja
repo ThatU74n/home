@@ -2,13 +2,13 @@ apiVersion: v1
 kind: Config
 clusters:
   - cluster:
-      certificate-authority-data: {{ kubernetes_ca_cert_content | b64encode }}
-      server: https://{{ hostvars[_kubernetes_first_control_plane_host]['ansible_host'] }}:6443
-    name: kubernetes 
-{% if hostvars[_kubernetes_first_control_plane_host]['ansible_facts']['tailscale0'] %}
+      certificate-authority-data: {{ kubectl_ca_cert_content | b64encode }}
+      server: https://{{ hostvars[_kubectl_first_control_plane_host]['ansible_host'] }}:6443
+    name: kubernetes
+{% if 'tailscale0' in hostvars[_kubectl_first_control_plane_host]['ansible_facts'] %}
   - cluster:
-      certificate-authority-data: {{ kubernetes_ca_cert_content | b64encode }}
-      server: https://{{ hostvars[_kubernetes_first_control_plane_host]['ansible_facts']['tailscale0']['ipv4_address'] }}:6443
+      certificate-authority-data: {{ kubectl_ca_cert_content | b64encode }}
+      server: https://{{ hostvars[_kubectl_first_control_plane_host]['ansible_facts']['tailscale0']['ipv4_address'] }}:6443
     name: kubernetes-tailscale
 {% endif %}
 
@@ -17,7 +17,7 @@ contexts:
       cluster: kubernetes
       user: kubernetes-admin
     name: kubernetes-admin@kubernetes
-{% if hostvars[_kubernetes_first_control_plane_host]['ansible_facts']['tailscale0'] %}
+{% if 'tailscale0' in hostvars[_kubectl_first_control_plane_host]['ansible_facts'] %}
   - context:
       cluster: kubernetes-tailscale
       user: kubernetes-admin
@@ -28,5 +28,5 @@ current-context: kubernetes-admin@kubernetes
 users:
   - name: kubernetes-admin
     user:
-      client-certificate-data: {{ kubectl_cert.certificate | b64encode }}
-      client-key-data: {{ kubectl_key.privatekey | b64encode }} 
+      client-certificate-data: {{ _kubectl_cert.certificate | b64encode }}
+      client-key-data: {{ _kubectl_key.privatekey | b64encode }}

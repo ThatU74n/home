@@ -1,5 +1,5 @@
 ---
 - name: Install Kubectl
-  ansible.builtin.homebrew:
+  community.general.homebrew:
     name: kubernetes-cli
     state: present

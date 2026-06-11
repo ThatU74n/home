@@ -1,12 +1,73 @@
 ---
 galaxy_info:
-  author: U74n
-  description: Install and configure kubectl
-  min_ansible_version: 2.20
-  platforms:
-    - name: Debian 
-      versions:
-        - 13      - Trixie
-    - name: MacOS
-      versions:
-        - all
+  author: "U74n"
+  description: "Install and configure Kubectl"
+  license: "MIT"
+  min_ansible_version: "2.20"
+argument_specs:
+  main:
+    author: "U74n"
+    description:
+      - "Install Kubectl and generate a kubeconfig for cluster access"
+      - "You can supply the Kubernetes CA key pairs as variables, "
+      - ""
+      - " * Documentation: https://kubernetes.io/docs/reference/kubectl"
+    short_description: "Install kubectl and configure kubeconfig"
+    options:
+      kubectl_version:
+        type: str
+        description:
+          - "Kubectl version to install"
+          - "See https://kubernetes.io/releases for details"
+        required: true
+
+      kubectl_ca_cert_content:
+        type: str
+        description:
+          - "Kubernetes CA certificate content"
+          - "If not provided, It'll generate a new CA certificate"
+        required: false
+
+      kubectl_ca_key_content:
+        type: str
+        description:
+          - "Kubernetes CA private key content"
+          - "If not provided, It'll generate a new CA key"
+        required: false
+
+      kubectl_not_after:
+        type: str
+        description:
+          - "Example +1h"
+          - "Defaults to 10 years from now when omitted"
+        required: false
+        default: ""
+
+  kubeconfig:
+    author: "U74n"
+    description:
+      - "Generate a kubeconfig for cluster access without installing kubectl"
+      - "You can supply the Kubernetes CA key pairs as variables, or let the role slurp them from the first control plane host"
+    short_description: "Generate kubeconfig for cluster access"
+    options:
+      kubectl_ca_cert_content:
+        type: str
+        description:
+          - "Kubernetes CA certificate content"
+          - "If not provided, It'll generate a new CA certificate"
+        required: false
+
+      kubectl_ca_key_content:
+        type: str
+        description:
+          - "Kubernetes CA private key content"
+          - "If not provided, It'll generate a new CA key"
+        required: false
+
+      kubectl_not_after:
+        type: str
+        description:
+          - "Example +1h"
+          - "Defaults to 10 years from now when omitted"
+        required: false
+        default: ""

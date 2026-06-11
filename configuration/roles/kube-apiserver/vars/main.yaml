@@ -8,6 +8,7 @@ _kube_apiserver_advertise_address: "{{ ansible_facts['default_ipv4']['address'] 
 _kube_apiserver_apiserver_san: >-
   {{ [
     "IP:" + ansible_facts['default_ipv4']['address'],
+    "IP:" + ansible_host,
     "IP:127.0.0.1",
     "IP:10.32.0.1",
     "DNS:" + inventory_hostname,

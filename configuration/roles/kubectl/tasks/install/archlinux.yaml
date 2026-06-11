@@ -1,6 +1,6 @@
 ---
 - name: Install Kubectl
-  become: true 
+  become: true
   community.general.pacman:
     name: kubectl
     state: present
