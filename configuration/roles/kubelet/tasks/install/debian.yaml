@@ -2,11 +2,7 @@
 - name: Install dependencies
   become: true
   ansible.builtin.apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gpg
+    name: "{{ _kubelet_dependencies_debian }}"
     state: present
 
 - name: Download Kubernetes GPG key
@@ -19,7 +15,12 @@
 - name: Dearmor Kubernetes GPG key
   become: true
   ansible.builtin.command:
-    cmd: "gpg --dearmor -o /etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.gpg /etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.asc"
+    argv:
+      - "gpg"
+      - "--dearmor"
+      - "-o"
+      - "/etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.gpg"
+      - "/etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.asc"
     creates: "/etc/apt/keyrings/kubernetes-{{ kubernetes_version | regex_replace('^v?(\\d+\\.\\d+).*', '\\1') }}.gpg"
 
 - name: Add Kubernetes repository

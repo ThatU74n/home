@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Config
 clusters:
   - cluster:
-      certificate-authority-data: {{ kubernetes_ca_cert_content | b64encode }}
+      certificate-authority-data: {{ kubelet_ca_cert_content | b64encode }}
       server: https://{{ hostvars[groups['control_plane'] | sort | first]['ansible_host'] }}:6443
     name: kubernetes
 contexts:
@@ -14,5 +14,5 @@ current-context: system:node:{{ inventory_hostname }}@kubernetes
 users:
   - name: system:node:{{ inventory_hostname }}
     user:
-      client-certificate-data: {{ kubelet_cert.content }}
-      client-key-data: {{ kubelet_key.content }}
+      client-certificate-data: {{ _kubelet_cert.content }}
+      client-key-data: {{ _kubelet_key.content }}

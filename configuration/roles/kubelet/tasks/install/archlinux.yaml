@@ -1,0 +1,6 @@
+---
+- name: Install Kubelet
+  become: true
+  community.general.pacman:
+    name: Kubelet
+    state: present
