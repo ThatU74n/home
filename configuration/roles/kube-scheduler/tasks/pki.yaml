@@ -1,26 +1,43 @@
 ---
-# Kube scheduler key & cert
-- name: Generate Kube-scheduler certificate
+- name: Write CAs
   become: true
-  register: scheduler_key
+  no_log: true
+  loop_control:
+    loop_var: ca_item
+  loop:
+    - dest: "{{ kube_scheduler_pki_dir }}/ca.crt"
+      content: "{{ kube_scheduler_ca_cert_content }}"
+      mode: '0644'
+    - dest: "{{ kube_scheduler_pki_dir }}/ca.key"
+      content: "{{ kube_scheduler_ca_key_content }}"
+      mode: '0600'
+  ansible.builtin.copy:
+    dest: "{{ ca_item.dest }}"
+    content: "{{ ca_item.content }}"
+    owner: root
+    group: root
+    mode: "{{ ca_item.mode }}"
+
+- name: Generate Kube-scheduler key
+  become: true
+  register: _kube_scheduler_key
   community.crypto.openssl_privatekey:
-    path: "{{ kubernetes_pki_dir }}/scheduler.key"
+    path: "{{ kube_scheduler_pki_dir }}/scheduler.key"
     size: 2048
 
 - name: Generate CSR for Kube-scheduler
   become: true
-  register: scheduler_csr
-  changed_when: scheduler_key.changed 
+  register: _kube_scheduler_csr
+  changed_when: _kube_scheduler_key.changed
   community.crypto.openssl_csr_pipe:
-    privatekey_path: "{{ kubernetes_pki_dir }}/scheduler.key"
+    privatekey_path: "{{ kube_scheduler_pki_dir }}/scheduler.key"
     common_name: system:kube-scheduler
 
 - name: Sign Kube-scheduler certificate
   become: true
   community.crypto.x509_certificate:
-    path: "{{ kubernetes_pki_dir }}/scheduler.crt"
-    csr_content: "{{ scheduler_csr.csr }}"
+    path: "{{ kube_scheduler_pki_dir }}/scheduler.crt"
+    csr_content: "{{ _kube_scheduler_csr.csr }}"
     provider: ownca
-    ownca_content: "{{ kubernetes_ca_cert_content }}"
-    ownca_privatekey_content: "{{ kubernetes_ca_key_content }}"
-
+    ownca_content: "{{ kube_scheduler_ca_cert_content }}"
+    ownca_privatekey_content: "{{ kube_scheduler_ca_key_content }}"

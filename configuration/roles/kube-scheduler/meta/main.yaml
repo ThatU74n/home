@@ -1,19 +1,78 @@
 ---
 galaxy_info:
-  author: U74n
-  description: Install and configure Kube-scheduler cluster
-  min_ansible_version: 2.20
-  platforms:
-    - name: Debian
-      versions:
-        - 13        - Trixie
-        - 12        - Bookworm
+  author: "U74n"
+  description: "Role to install and configure Kubernetes scheduler"
+  license: "MIT"
+  min_ansible_version: "2.20"
+argument_specs:
+  main:
+    author: "U74n"
+    description:
+      - "Install and configure Kubernetes scheduler standalone or as part of a cluster"
+      - "Kubernetes scheduler is a the one assigning Pods to Nodes"
+      - "You can supply your own PKI key pairs as variables, or let the role provision them"
+      - ""
+      - " * Documentation: https://kubernetes.io/docs/reference/command-line-tools-reference/Kubernetes scheduler"
+    short_description: "Install and configure Kubernetes scheduler"
+    options:
+      kube_scheduler_version:
+        type: str
+        description:
+          - "Kubernetes scheduler version to install"
+          - "It is recommended to use the same version as the other components in the cluster"
+          - "See https://kubernetes.io/release for details"
+        required: true
 
-    - name: CentOS
-      versions:
-        - stream 10 - Coughlan
+      kube_scheduler_mode:
+        type: str
+        description:
+          - "Kubernetes scheduler deployment mode. Deploy scheduler as:"
+          - " - systemd     # deploy as a systemd service"
+          - " - staticpod   # deploy as a static pod (requires Kubelet)"
+          - "Defaults to staticpod when omitted"
+        choices:
+          - systemd
+          - staticpod
+        required: false
+        default: staticpod
 
-    - name: Fedora
-      versions:
-        - 43
-        - 42
+      kube_scheduler_installation_dir:
+        type: path
+        description:
+          - "Directory to install the Kubernetes scheduler binary"
+          - "Only applicable to systemd deployment mode"
+          - "Defaults to /usr/local/kubernetes when omitted"
+        required: false
+        default: /usr/local/kubernetes
+
+      kube_scheduler_static_pod_dir:
+        type: path
+        description:
+          - "Directory of Kubernetes static pod manifests for Kubelet"
+          - "Only applicable to staticpod deployment mode"
+          - "Defaults to /etc/kubernetes/manifests when omitted"
+        required: false
+        default: /etc/kubernetes/manifests
+
+      kube_scheduler_pki_dir:
+        type: path
+        description:
+          - "Directory to store Kubernetes scheduler PKI files, including:"
+          - " - Kubernetes scheduler certificate and key"
+          - "Defaults to /etc/kubernetes/pki when omitted"
+        required: false
+        default: /etc/kubernetes/pki
+
+      kube_scheduler_ca_cert_content:
+        type: str
+        description:
+          - "Kubernetes CA certificate content"
+          - "If not provided, it will generate a new CA certificate"
+        required: false
+
+      kube_scheduler_ca_key_content:
+        type: str
+        description:
+          - "Kubernetes CA private key content (PEM)"
+          - "If not provided, it will generate a new CA key"
+        required: false

@@ -1,6 +1,6 @@
 ---
-apiVersion: v1 
-kind: Pod 
+apiVersion: v1
+kind: Pod
 metadata:
   name: kube-scheduler
   namespace: kube-system
@@ -11,21 +11,17 @@ spec:
   hostNetwork: true
   priorityClassName: system-cluster-critical
   containers:
-    - name: kube-scheduler 
-      image: k8s.gcr.io/kube-scheduler:v{{ kubernetes_version }}
+    - name: kube-scheduler
+      image: registry.k8s.io/kube-scheduler:v{{ kube_scheduler_version }}
       command:
         - kube-scheduler
-        - --bind-address=0.0.0.0
-        - --leader-elect=true
-        - --kubeconfig=/etc/kubernetes/scheduler.conf
-        - --v=2
+        {{ _kube_scheduler_static_pod_flags | indent(8) }}
       volumeMounts:
         - name: kubeconfig
-          mountPath: /etc/kubernetes/scheduler.conf 
+          mountPath: /etc/kubernetes/scheduler.conf
           readOnly: true
   volumes:
     - name: kubeconfig
       hostPath:
         path: /etc/kubernetes/scheduler.conf
         type: File
-

@@ -1,10 +1,18 @@
 ---
-_mode_map:
-  staticpod: ["staticpod", "static-pod", "static_pod", "kubelet"]
-  systemd: ["systemd", "systemd-service", "systemd_service", "binary"]
+_kube_scheduler_dependencies:
+  - "{{ 'python3-cryptography' if ansible_facts['os_family'] != 'ArchLinux' else 'python-cryptography' }}"
 
-_mode: "{{ _mode_map | dict2items | selectattr('value', 'contains', kube_scheduler_mode) | map(attribute='key') | first }}"
+_kube_scheduler_flags: |
+  --bind-address=0.0.0.0
+  --leader-elect=true
+  --kubeconfig=/etc/kubernetes/scheduler.conf
+  --v=2
 
-_is_systemd_and_kubernetes_installation_dir_blank: "{{ _mode == 'systemd' and (kubernetes_installation_dir is not truthy)}}"
-_is_staticpod_and_kubernetes_static_pod_dir_blank: "{{ _mode == 'staticpod' and (kubernetes_static_pod_dir is not truthy)}}"
-_is_kubernetes_ca_server_in_inventory: "{{ kubernetes_ca_server in groups['all'] }}"
+_kube_scheduler_systemd_flags: "{{ _kube_scheduler_flags.splitlines() | join(' ') }}"
+_kube_scheduler_static_pod_flags: |-
+  {% for flag in _kube_scheduler_flags.splitlines() %}
+  - {{ flag }}
+  {% endfor %}
+
+_kube_scheduler_is_installation_dir_blank: "{{ kube_scheduler_installation_dir is not truthy }}"
+_kube_scheduler_is_static_pod_dir_blank: "{{ kube_scheduler_static_pod_dir is not truthy }}"
