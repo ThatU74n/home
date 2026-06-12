@@ -9,10 +9,7 @@ StandardError=journal
 Restart=on-failure
 RestartSec=5
 ExecStart=kube-scheduler \
-    --bind-address=0.0.0.0 \
-    --leader-elect=true \
-    --kubeconfig=/etc/kubernetes/scheduler.conf \
-    --v=2
+{{ _kube_scheduler_systemd_flags | indent(2) }}
 
 [Install]
 WantedBy=multi-user.target

@@ -1,4 +1,22 @@
 ---
-_kubernetes_minor_version: "{{ kubernetes_version.split('.')[0:2] | join('.') }}"
+_kubelet_dependencies_debian:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gpg
 
-_is_kubernetes_ca_server_in_inventory: "{{ kubernetes_ca_server in groups['all'] }}"
+_kubelet_dependencies_redhat:
+  - ca-certificates
+  - curl
+  - gnupg
+
+_kubelet_minor_version: "{{ kubernetes_version.split('.')[0:2] | join('.') }}"
+
+_kubelet_flags: |
+  --config=/etc/kubernetes/kubelet-config.yaml
+  --kubeconfig=/etc/kubernetes/kubelet.conf
+  --container-runtime-endpoint=unix:///run/containerd/containerd.sock
+  --node-ip={{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }}
+  --hostname-override={{ inventory_hostname }}
+
+_kubelet_systemd_flags: "{{ _kubelet_flags.splitlines() | join(' ') }}"

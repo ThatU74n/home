@@ -6,7 +6,7 @@
 
 - name: Restart Kube-scheduler
   become: true
-  when: _mode == "systemd"
+  when: kube_scheduler_mode == "systemd"
   ansible.builtin.systemd:
     name: kube-scheduler
     state: restarted

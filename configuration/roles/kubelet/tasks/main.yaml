@@ -2,8 +2,8 @@
 - name: Preflight
   ansible.builtin.import_tasks: preflight.yaml
 
-- name: Ensure Kubernetes directory 
-  become: true 
+- name: Ensure Kubernetes directory
+  become: true
   loop_control:
     loop_var: kubernetes_directory
   loop:
@@ -12,17 +12,13 @@
   ansible.builtin.file:
     path: "{{ kubernetes_directory }}"
     state: directory
-    owner: root 
-    group: root 
+    owner: root
+    group: root
     mode: "0755"
 
-- name: Install (Debian)
-  when: ansible_facts['os_family'] == 'Debian'
-  ansible.builtin.import_tasks: install_debian.yaml
-
-- name: Install (RedHat)
-  when: ansible_facts['os_family'] == 'RedHat'
-  ansible.builtin.import_tasks: install_redhat.yaml
+- name: Install
+  ansible.builtin.include_tasks:
+    file: "install/{{ ansible_facts['os_family'] | lower }}.yaml"
 
 - name: Configure PKI
   ansible.builtin.import_tasks: pki.yaml

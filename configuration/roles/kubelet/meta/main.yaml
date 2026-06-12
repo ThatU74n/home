@@ -1,19 +1,54 @@
 ---
 galaxy_info:
-  author: U74n
-  description: Install and configure kubelet
-  min_ansible_version: 2.20
-  platforms:
-    - name: Debian
-      versions:
-        - 13       - Trixie
-        - 12       - Bookworm
+  author: "U74n"
+  description: " Role to install and configure Kubelet"
+  license: "MIT"
+  min_ansible_version: "2.20"
+argument_specs:
+  main:
+    author: "U74n"
+    description:
+      - "Install and configure Kubelet"
+      - "Kubelet is the node agent reponsible for managing pods and container on a Kubernetes host"
+      - "Kubelet works by coordinating between the API server and the CRI"
+      - ""
+      - " * Documentation: https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet"
+    short_description: "Install and configure Kubelet"
+    options:
+      kubelet_version:
+        type: str
+        description:
+          - "Kubelet version to install"
+          - "It's recommended to use the same version as the other components in the cluster"
+          - "See https://kubernetes.io/releases for details"
+        required: true
 
-    - name: CentOS
-      versions:
-        - stream 10 - Coughlan
+      kubelet_static_pod_dir:
+        type: path
+        description:
+          - "Directory of Kubernetes static pods manifests"
+          - "Default to /etc/kubernetes/manifests when omitted"
+        required: false
+        default: /etc/kubernetes/manifests
 
-    - name: Fedora
-      versions:
-        - 43
-        - 42
+      kubelet_pki_dir:
+        type: path
+        description:
+          - "Directory of Kubelet PKI files"
+          - "Default to /etc/kubernetes/pki when omitted"
+        required: false
+        default: /etc/kubernetes/pki
+
+      kubelet_ca_key_content:
+        type: str
+        description:
+          - "Kubernetes CA key content"
+          - "If not provided, it will generate a new CA key"
+        required: false
+
+      kubelet_ca_cert_content:
+        type: str
+        description:
+          - "Kubernetes CA certificate content"
+          - "If not provided, it will generate a new CA certificate"
+        required: false

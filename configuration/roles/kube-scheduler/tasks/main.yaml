@@ -14,5 +14,5 @@
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: Deploy 
+- name: Deploy
   ansible.builtin.import_tasks: deploy.yaml

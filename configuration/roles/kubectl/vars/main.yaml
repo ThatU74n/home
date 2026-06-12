@@ -1,5 +1,18 @@
 ---
-_kubernetes_minor_version: "{{ kubernetes_version.split('.')[0:2] | join('.') }}"
+_kubectl_dependencies_debian:
+  - python3-debian
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gpg
 
-_kubernetes_first_control_plane_host: "{{ groups['control_plane'] | sort | first }}"
-_is_kubernetes_ca_server_in_inventory: "{{ kubernetes_ca_server in groups['all'] }}"
+_kubectl_dependencies_redhat:
+  - python3
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gpg
+
+_kubectl_minor_version: "{{ kubectl_version.split('.')[0:2] | join('.') }}"
+
+_kubectl_first_control_plane_host: "{{ groups['control_plane'] | sort | first }}"

@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: "U74n"
-  description: "Role to install and configure Kube API server"
+  description: "Role to install and configure Kubernetes API server"
   license: "MIT"
   min_ansible_version: "2.20"
 argument_specs:
@@ -13,7 +13,7 @@ argument_specs:
       - "You can supply your own PKI key pairs as variables, or let the role provision them"
       - ""
       - " * Documentation: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver"
-    short_description: "Install and configure Kube API server"
+    short_description: "Install and configure Kubernetes API server"
     options:
       kube_apiserver_version:
         type: str
@@ -26,9 +26,9 @@ argument_specs:
       kube_apiserver_mode:
         type: str
         description:
-          - "Kube API server deployment mode. Deploy the API server as:"
-          - " - systemd      # deploy Kube API server as a systemd service"
-          - " - staticpod    # deploy Kube API server as a static pod (requires Kubelet)"
+          - "Kubernetes API server deployment mode. Deploy the API server as:"
+          - " - systemd      # deploy as a systemd service"
+          - " - staticpod    # deploy as a static pod (requires Kubelet)"
           - "Defaults to staticpod when omitted"
         choices:
           - systemd
@@ -39,7 +39,8 @@ argument_specs:
       kube_apiserver_installation_dir:
         type: path
         description:
-          - "Directory to install the Kube API server binary. Only applicable to systemd deployment mode"
+          - "Directory to install the Kubernetes API server binary"
+          - "Only applicable to systemd deployment mode"
           - "Defaults to /usr/local/kubernetes when omitted"
         required: false
         default: /usr/local/kubernetes
@@ -47,7 +48,8 @@ argument_specs:
       kube_apiserver_static_pod_dir:
         type: path
         description:
-          - "Directory to store the Kube API server static pod manifest. Only applicable to staticpod deployment mode"
+          - "Directory to store the Kubernetes API server static pod manifest"
+          - "Only applicable to staticpod deployment mode"
           - "Defaults to /etc/kubernetes/manifests when omitted"
         required: false
         default: /etc/kubernetes/manifests
@@ -55,7 +57,7 @@ argument_specs:
       kube_apiserver_pki_dir:
         type: path
         description:
-          - "Directory to store Kube API server PKI files, including:"
+          - "Directory to store Kubernetes API server PKI files, including:"
           - " - Server certificate and key"
           - " - Etcd client certificate and key"
           - " - Kubelet client certificate and key"

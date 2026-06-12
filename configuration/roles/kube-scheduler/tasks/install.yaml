@@ -1,25 +1,25 @@
 ---
-- name: Ensure Kubernetes diretory 
-  become: true 
+- name: Ensure Kubernetes directory
+  become: true
   loop_control:
-    loop_var: kubernetes_directory
+    loop_var: kubernetes_dir
   loop:
-    - "{{ kubernetes_installation_dir if _mode == 'systemd' else omit }}"
-    - "{{ kubernetes_pki_dir }}"
-    - "{{ kubernetes_static_pod_dir if _mode == 'staticpod' else omit }}"
+    - "{{ kube_scheduler_installation_dir if kube_scheduler_mode == 'systemd' else omit }}"
+    - "{{ kube_scheduler_pki_dir }}"
+    - "{{ kube_scheduler_static_pod_dir if kube_scheduler_mode == 'staticpod' else omit }}"
   ansible.builtin.file:
-    path: "{{ kubernetes_directory }}"
-    state: directory 
+    path: "{{ kubernetes_dir }}"
+    state: directory
     owner: root
     group: root
     mode: "0755"
 
 - name: Download Kube-scheduler binary
   become: true
-  when: _mode == "systemd"
+  when: kube_scheduler_mode == "systemd"
   ansible.builtin.get_url:
-    url: "https://dl.k8s.io/v{{ kubernetes_version }}/bin/linux/amd64/kube-scheduler"
-    dest: "{{ kubernetes_installation_dir }}/kube-scheduler-{{ kubernetes_version }}"
+    url: "https://dl.k8s.io/v{{ kube_scheduler_version }}/bin/linux/amd64/kube-scheduler"
+    dest: "{{ kube_scheduler_installation_dir }}/kube-scheduler-{{ kube_scheduler_version }}"
     checksum: "sha256:{{ kube_scheduler_checksum }}"
     owner: root
     group: root
@@ -27,10 +27,10 @@
 
 - name: Symlink Kube-scheduler binary
   become: true
-  when: _mode == "systemd"
-  ansible.builtin.file:
-    src: "{{ kubernetes_installation_dir }}/kube-scheduler-{{ kubernetes_version }}"
-    dest: /usr/local/bin/kube-scheduler
-    state: link
+  when: kube_scheduler_mode == "systemd"
   notify:
     - Restart Kube-scheduler
+  ansible.builtin.file:
+    src: "{{ kube_scheduler_installation_dir }}/kube-scheduler-{{ kube_scheduler_version }}"
+    dest: /usr/local/bin/kube-scheduler
+    state: link

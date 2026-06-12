@@ -7,13 +7,13 @@ clusterDNS:
 clusterDomain: cluster.local
 authentication:
   x509: 
-    clientCAFile: {{ kubernetes_pki_dir }}/ca.crt
+    clientCAFile: {{ kubelet_pki_dir }}/ca.crt
   webhook:
     enabled: true
   anonymous:
     enabled: false
 authorization:
   mode: Webhook
-tlsCertFile: {{ kubernetes_pki_dir }}/kubelet-serving.crt
-tlsPrivateKeyFile: {{ kubernetes_pki_dir }}/kubelet-serving.key
+tlsCertFile: {{ kubelet_pki_dir }}/kubelet-serving.crt
+tlsPrivateKeyFile: {{ kubelet_pki_dir }}/kubelet-serving.key
 staticPodPath: /etc/kubernetes/manifests

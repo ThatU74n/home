@@ -7,7 +7,7 @@ on:
       - opened
       - synchronize
     branches:
-      - main
+      - untargeted
     paths:
       - configuration/**
       - infrastructure/**
@@ -106,7 +106,7 @@ jobs:
         run: |
           cd configuration
           touch ansible_dry_run_output.txt
-          ansible-playbook --vault-password-file=../vault_password.txt --check --diff playbooks/control_plane.yaml | tee ansible_dry_run_output.txt 
+          ansible-playbook --vault-password-file=../vault_password.txt --check --diff playbooks/control_plane.yaml | tee ansible_dry_run_output.txt
           echo "\n ---\n" >> ansible_dry_run_output.txt
           ansible-playbook --vault-password-file=../vault_password.txt --check --diff playbooks/worker.yaml | tee -a ansible_dry_run_output.txt
           echo "plan<<EOF" >> $GITHUB_OUTPUT
@@ -144,7 +144,7 @@ jobs:
             \`\`\`
             $TERRAFORM_RESULT
             \`\`\`
-            ")  
+            ")
             curl -s -X POST \
               -H "Authorization: token $GITEA_SERVER_TOKEN" \
               -H "Content-Type: application/json" \
