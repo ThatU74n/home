@@ -6,7 +6,7 @@
 
 - name: Restart Kube-controller-manager
   become: true
-  when: _mode == "systemd"
+  when: kube_controller_manager_mode == "systemd"
   ansible.builtin.systemd:
     name: kube-controller-manager
     state: restarted

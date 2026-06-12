@@ -1,38 +1,37 @@
 ---
 # Stop other mode deployments
 - name: Stop Kube-controller-manager systemd deployment
-  become: true 
-  when:
-    - _mode != "systemd"
-    - "'kube-controller-manager.service' in ansible_facts.services"
-    - ansible_facts.services['kube-controller-manager.service']['state'] in ['running', 'active']
-  ansible.builtin.systemd:
-    name: kube-controller-manager 
-    state: stopped
-
-- name: Stop Kube-controller-manager static pod deployment 
   become: true
   when:
-    - _mode != "staticpod"
+    - kube_controller_manager_mode != "systemd"
+    - "'kube-controller-manager.service' in ansible_facts.services"
+  ansible.builtin.systemd:
+    name: kube-controller-manager
+    state: stopped
+
+- name: Stop Kube-controller-manager static pod deployment
+  become: true
+  when:
+    - kube_controller_manager_mode != "staticpod"
   ansible.builtin.file:
-    name: "{{ kubernetes_static_pod_dir }}/controller-manager.yaml"
+    name: "{{ kube_controller_manager_static_pod_dir }}/controller-manager.yaml"
     state: absent
 
 # Start the deployment for the selected mode
 - name: Start Kube-controller-manager systemd deployment
-  become: true 
-  when: _mode == "systemd"
+  become: true
+  when: kube_controller_manager_mode == "systemd"
   ansible.builtin.systemd:
-    name: kube-controller-manager 
+    name: kube-controller-manager
     state: started
     enabled: true
 
-- name: Start Kube-controller-manager static pod deployment 
+- name: Start Kube-controller-manager static pod deployment
   become: true
-  when: _mode == "staticpod"
+  when: kube_controller_manager_mode == "staticpod"
   ansible.builtin.template:
     src: controller-manager.yaml.jinja
-    dest: "{{ kubernetes_static_pod_dir }}/controller-manager.yaml"
+    dest: "{{ kube_controller_manager_static_pod_dir }}/controller-manager.yaml"
     owner: root
     group: root
     mode: "0644"
