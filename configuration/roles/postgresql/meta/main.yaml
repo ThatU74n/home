@@ -1,0 +1,115 @@
+---
+galaxy_info:
+  author: "U74n"
+  description: "Role to operate PostgreSQL, docker compose based"
+  license: "MIT"
+  min_ansible_version: "2.20"
+argument_specs:
+  main:
+    author: "U74n"
+    description: "Install and configure PostgreSQL using docker compose"
+    short_description: "Install and configure PostgreSQL using docker compose"
+    options:
+      postgresql_tag:
+        type: str
+        description:
+          - "postgres image tag (e.g. 16-alpine)"
+        required: true
+
+      postgresql_project_src:
+        type: str
+        description:
+          - "Where to put the compose file; defaults to $HOME/postgres"
+        required: false
+        default: $HOME/postgres
+
+      postgresql_data_path:
+        type: str
+        description:
+          - "Host path for /var/lib/postgresql/data; omit to use an external docker volume"
+        required: false
+        default:
+
+      postgresql_super_user:
+        type: str
+        description:
+          - "POSTGRES_USER passed to the container"
+        required: true
+
+      postgresql_super_password:
+        type: str
+        description:
+          - "POSTGRES_PASSWORD passed to the container"
+        required: true
+
+  user:
+    author: "U74n"
+    description: "Create new user in PostgreSQL with role CREATEDB"
+    short_description: "Create new user in PostgreSQL with role CREATEDB"
+    options:
+      postgresql_user:
+        type: str
+        description:
+          - "Role name to create"
+        required: true
+
+      postgresql_password:
+        type: str
+        description:
+          - "Password for the role"
+        required: true
+
+      postgresql_super_user:
+        type: str
+        description:
+          - "Superuser to connect as"
+        required: true
+
+      postgresql_super_password:
+        type: str
+        description:
+          - "Superuser password"
+        required: true
+
+      postgresql_host:
+        type: str
+        description:
+          - "Host of PostgreSQL"
+        required: false
+        default: localhost
+
+  database:
+    author: "U74n"
+    description: "Create a database owned by a given role; requires the role to already exist"
+    short_description: "Create a database owned by a given role"
+    options:
+      postgresql_database:
+        type: str
+        description:
+          - "Database name to create"
+        required: true
+
+      postgresql_user:
+        type: str
+        description:
+          - "Role that will own the database; must already exist"
+        required: true
+
+      postgresql_super_user:
+        type: str
+        description:
+          - "Superuser to connect as"
+        required: true
+
+      postgresql_super_password:
+        type: str
+        description:
+          - "Superuser password"
+        required: true
+
+      postgresql_host:
+        type: str
+        description:
+          - "Host of PostgreSQL"
+        required: false
+        default: localhost

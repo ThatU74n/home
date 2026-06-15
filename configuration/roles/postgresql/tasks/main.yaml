@@ -1,0 +1,16 @@
+---
+- name: Install
+  ansible.builtin.import_tasks: install.yaml
+
+- name: Configure
+  ansible.builtin.import_tasks: configure.yaml
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure PostgreSQL is running
+  community.docker.docker_compose_v2:
+    project_src: "{{ postgresql_project_src }}"
+    wait: true
+    wait_timeout: 60
+    state: present

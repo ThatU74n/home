@@ -1,0 +1,94 @@
+---
+galaxy_info:
+  author: "U74n"
+  description: ""
+  license: "MIT"
+  min_ansible_version: ""
+argument_specs:
+  main:
+    description: ""
+    short_description: ""
+    options:
+      gitea_tag:
+        type: str
+        description: ""
+        required: true
+
+      gitea_project_src:
+        type: path
+        description: ""
+        required: false
+
+      gitea_data_path:
+        type: path
+        description: ""
+        required: false
+
+      gitea_create_admin_user:
+        type: bool
+        description: ""
+        required: false
+        default: true
+
+      gitea_admin_user:
+        type: str
+        description: ""
+        required: false
+        default: gitea
+
+      gitea_admin_password:
+        type: str
+        description: ""
+        required: true
+
+      gitea_admin_email:
+        type: str
+        description: ""
+        required: false
+        default: admin@admin.com
+
+      gitea_create_database:
+        type: bool
+        description: ""
+        required: false
+        default: true
+
+      gitea_postgres_host:
+        type: str
+        description: ""
+        required: false
+        default: localhost
+
+      gitea_postgres_port:
+        type: int
+        description: ""
+        required: false
+        default: 5432
+
+      gitea_postgres_super_user:
+        type: str
+        description: ""
+        required: false
+        default: postgres
+
+      gitea_postgres_super_password:
+        type: str
+        description: ""
+        required: false
+
+      gitea_postgres_user:
+        type: str
+        description: ""
+        required: false
+        default: gitea
+
+      gitea_postgres_password:
+        type: str
+        description: ""
+        required: false
+
+      gitea_postgres_database:
+        type: str
+        description: ""
+        required: false
+        default: giteadb

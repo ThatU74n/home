@@ -1,0 +1,19 @@
+---
+- name: Ensure Gitea runner volume
+  when: gitea_runner_data_path is not truthy
+  community.docker.docker_volume:
+    name: gitea_runner_data
+    state: present
+
+- name: Ensure Gitea runner data path
+  when: gitea_runner_data_path is truthy
+  ansible.builtin.file:
+    path: "{{ gitea_runner_data_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Ensure Gitea runner project source
+  ansible.builtin.file:
+    path: "{{ gitea_runner_project_src }}"
+    state: directory
+    mode: "0755"

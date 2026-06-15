@@ -1,0 +1,28 @@
+---
+services:
+  postgres:
+    container_name: postgres 
+    image: postgres:{{ postgresql_tag }}
+    restart: always
+    labels:
+      - app=postgres 
+    environment:
+      POSTGRES_USER: {{ postgresql_super_user }}
+      POSTGRES_PASSWORD: {{ postgresql_super_password }}
+    command: postgres -c password_encryption=scram-sha-256
+    volumes:
+{% if postgresql_data_path is truthy %}
+      - {{ postgresql_data_path }}:/var/lib/postgresql/data
+{% else %}
+      - postgres_data:/var/lib/postgresql/data 
+{% endif %}
+    ports:
+      - 5432:5432
+
+{% if postgresql_data_path is not truthy %}
+volumes:
+  postgres_data:
+    name: postgres_data
+    external: true
+{% endif %}
+

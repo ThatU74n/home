@@ -1,0 +1,11 @@
+---
+- name: Ensure role
+  community.postgresql.postgresql_user:
+    name: "{{ postgresql_user }}"
+    role_attr_flags: CREATEDB
+    password: "{{ postgresql_password }}"
+    login_user: "{{ postgresql_super_user }}"
+    login_password: "{{ postgresql_super_password }}"
+    login_host: "{{ postgresql_host }}"
+    login_port: 5432
+    state: present

@@ -1,0 +1,25 @@
+---
+- name: Ensure Gitea data volume
+  when: gitea_data_path is not truthy
+  community.docker.docker_volume:
+    name: gitea_data
+    state: present
+
+# Gitea git user UID/GUID is 1000, so chown -R 1000:1000
+# so that gitea can access the git database
+- name: Ensure Gitea data directory
+  when: gitea_data_path is truthy
+  become: true
+  ansible.builtin.file:
+    path: "{{ gitea_data_path }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+    recurse: true
+
+- name: Ensure Gitea project directory
+  ansible.builtin.file:
+    path: "{{ gitea_project_src }}"
+    state: directory
+    mode: "0755"

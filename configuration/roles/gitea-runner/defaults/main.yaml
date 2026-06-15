@@ -1,0 +1,10 @@
+---
+gitea_runner_tag: nightly
+gitea_runner_gitea_url: ""
+gitea_runner_gitea_admin_user: ""
+gitea_runner_gitea_admin_password: ""
+gitea_runner_registration_token: ""
+gitea_runner_name: "{{ inventory_hostname }}"
+gitea_runner_labels: "ubuntu-latest:docker://node:16-bullseye"
+gitea_runner_project_src: "{{ ansible_facts['env']['HOME'] }}/gitea-runner"
+gitea_runner_data_path: ""

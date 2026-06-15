@@ -8,7 +8,7 @@
 
 - name: Add Tailscale repository
   become: true
-  notify: Update apt cache 
+  notify: Update apt cache
   ansible.builtin.deb822_repository:
     name: tailscale
     types: deb

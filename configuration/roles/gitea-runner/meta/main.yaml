@@ -1,0 +1,57 @@
+---
+galaxy_info:
+  author: "U74n"
+  description: ""
+  license: "MIT"
+  min_ansible_version: ""
+argument_specs:
+  main:
+    description: ""
+    short_description: ""
+    options:
+      gitea_runner_tag:
+        type: str
+        description: ""
+        required: true
+
+      gitea_runner_gitea_url:
+        type: str
+        description: ""
+        required: false
+
+      gitea_runner_gitea_admin_user:
+        type: str
+        description: ""
+        required: false
+
+      gitea_runner_gitea_admin_password:
+        type: str
+        description: ""
+        required: false
+
+      gitea_runner_registration_token:
+        type: str
+        description: ""
+        required: false
+
+      gitea_runner_name:
+        type: str
+        description: ""
+        required: false
+        default: "{{ inventory_hostname }}"
+
+      gitea_runner_labels:
+        type: str
+        description: ""
+        required: false
+        default: "ubuntu-latest:docker://node:16-bullseye"
+
+      gitea_runner_project_src:
+        type: path
+        description: ""
+        required: false
+
+      gitea_runner_data_path:
+        type: path
+        description: ""
+        required: false

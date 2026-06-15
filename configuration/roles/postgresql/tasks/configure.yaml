@@ -1,0 +1,7 @@
+---
+- name: Copy PostgreSQL template
+  notify: Restart PostgreSQL
+  ansible.builtin.template:
+    src: compose.yaml.jinja
+    dest: "{{ postgresql_project_src }}/compose.yaml"
+    mode: "0600"

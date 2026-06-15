@@ -14,6 +14,20 @@
       ansible.builtin.import_role:
         name: docker
 
+    - name: Install PostgreSQL
+      ansible.builtin.import_role:
+        name: postgresql
+      vars:
+        postgresql_tag: 15
+
     - name: Install Gitea
       ansible.builtin.import_role:
         name: gitea
+      vars:
+        gitea_tag: 1.25.5-rootless
+
+    - name: Install Gitea Runner
+      ansible.builtin.import_role:
+        name: gitea-runner
+      vars:
+        gitea_runner_tag: latest

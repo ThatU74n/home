@@ -1,0 +1,21 @@
+---
+- name: Ensure PostgreSQL volume
+  when: postgresql_data_path is not truthy
+  community.docker.docker_volume:
+    name: postgres_data
+
+- name: Ensure PostgreSQL data path
+  when: postgresql_data_path is truthy
+  become: true
+  ansible.builtin.file:
+    path: "{{ postgresql_data_path }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+
+- name: Ensure project directory
+  ansible.builtin.file:
+    path: "{{ postgresql_project_src }}"
+    state: directory
+    mode: "0755"

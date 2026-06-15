@@ -1,16 +1,16 @@
 ---
-# Administration
-gitea_admin_user: admin
-gitea_admin_email: admin@admin.com
-# Image
 gitea_tag:
-gitea_postgres_tag:
-gitea_act_runner_tag:
-# Volumes
+gitea_project_src: "{{ ansible_facts['env']['HOME'] }}/gitea"
 gitea_data_path:
-gitea_act_runner_data_path:
-gitea_postgres_data_path:
-# Postgres
+gitea_create_admin_user: true
+gitea_admin_user: gitea
+gitea_admin_password:
+gitea_admin_email: admin@admin.com
+gitea_create_database: true
+gitea_postgres_host: localhost
+gitea_postgres_port: 5432
 gitea_postgres_super_user: postgres
-# Misc
-gitea_act_runner_registration_token:
+gitea_postgres_super_password:
+gitea_postgres_user: gitea
+gitea_postgres_password:
+gitea_postgres_database: giteadb

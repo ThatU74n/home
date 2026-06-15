@@ -1,0 +1,4 @@
+---
+_gitea_postgres_host: "{{ 'host.docker.internal' if gitea_postgres_host == 'localhost' else gitea_postgres_host }}"
+_gitea_postgres_user: "{{ gitea_postgres_user if gitea_postgres_user is truthy else gitea_postgres_super_user }}"
+_gitea_postgres_password: "{{ gitea_postgres_password if gitea_postgres_user is truthy else gitea_postgres_super_password }}"

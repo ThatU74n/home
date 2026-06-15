@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  author: ""
+  description: ""
+  license: ""
+  min_ansible_version: "2.20"
+argument_specs:
+  main:
+    author: ""
+    description: ""
+    short_description: ""
+    options:
+      tailscale_auth_key:
+        type: str
+        description:
+          - "Tailscale authentication key to join the Tailnet"
+          - "You can generate an auth key from the Tailscale admin console"
+        required: true
+
+      tailscale_hostname:
+        type: str
+        description:
+          - "Hostname to use for the Tailscale node"
+          - "Defaults to host name when omitted"
+        required: false

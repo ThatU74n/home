@@ -1,0 +1,19 @@
+---
+- name: Preflight
+  ansible.builtin.import_tasks: preflight.yaml
+
+- name: Install
+  ansible.builtin.import_tasks: install.yaml
+
+- name: Configure
+  ansible.builtin.import_tasks: configure.yaml
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure Gitea runner is running
+  community.docker.docker_compose_v2:
+    project_src: "{{ gitea_runner_project_src }}"
+    wait: true
+    wait_timeout: 60
+    state: present

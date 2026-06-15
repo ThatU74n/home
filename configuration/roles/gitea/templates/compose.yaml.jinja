@@ -9,38 +9,27 @@ services:
     environment:
       GITEA__security__INSTALL_LOCK: "true"
       GITEA__database__DB_TYPE: postgres
-      GITEA__database__HOST: postgres:5432
-      GITEA__database__NAME: giteadb 
-      GITEA__database__USER: gitea 
-      GITEA__database__PASSWD: {{ gitea_postgres_password }}
+      GITEA__database__HOST: {{ _gitea_postgres_host }}:{{ gitea_postgres_port }}
+      GITEA__database__NAME: {{ gitea_postgres_database }}
+      GITEA__database__USER: {{ _gitea_postgres_user }}
+      GITEA__database__PASSWD: {{ _gitea_postgres_password }}
+    extra_hosts:
+      - host.docker.internal:host-gateway
     volumes:
-{% if gitea_data_path is defined %}
+{% if gitea_data_path is truthy %}
       - {{ gitea_data_path }}:/var/lib/gitea
 {% else %}
-      - gitea_data:/var/lib/gitea 
-{% endif %}
-{% if gitea_config_path is defined %}
-      - {{ gitea_config_path }}:/etc/gitea:ro
+      - gitea_data:/var/lib/gitea
 {% endif %}
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 3000:3000
       - 2222:2222
-    networks:
-      - gitea_network
 
-{% if gitea_data_path == "" %}
+{% if gitea_data_path is not truthy %}
 volumes:
   gitea_data:
     name: gitea_data
     external: true
 {% endif %}
-
-networks:
-  gitea_network:
-    name: gitea_network
-    external: true
-
-
-

@@ -1,0 +1,5 @@
+# This file is deprecated and will be replace by nix shell in the future
+
+ansible
+ansible-lint
+

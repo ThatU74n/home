@@ -1,0 +1,30 @@
+---
+services:
+  runner:
+    container_name: runner
+    image: gitea/act_runner:{{ gitea_runner_tag }}
+    labels:
+      - app=gitea
+    environment:
+      GITEA_INSTANCE_URL: "{{ gitea_runner_gitea_url }}"
+      GITEA_RUNNER_REGISTRATION_TOKEN: "{{ gitea_runner_registration_token }}"
+      GITEA_RUNNER_NAME: "{{ gitea_runner_name }}"
+      GITEA_RUNNER_LABELS: "{{ gitea_runner_labels }}"
+      CONFIG_FILE: /config.yaml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config.yaml:/config.yaml
+{% if gitea_runner_data_path is truthy %}
+      - {{ gitea_runner_data_path }}:/data
+{% else %}
+      - gitea_runner_data:/data
+{% endif %}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+{% if gitea_runner_data_path is not truthy %}
+volumes:
+  gitea_runner_data:
+    name: gitea_runner_data
+    external: true
+{% endif %}

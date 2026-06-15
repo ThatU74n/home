@@ -1,10 +1,23 @@
 ---
-- name: Install (Debian)
-  when: ansible_facts['os_family'] == "Debian"
-  ansible.builtin.import_tasks: install.yaml
+- name: Install
+  ansible.builtin.include_tasks: "install/{{ ansible_facts['os_family'] | lower }}.yaml"
+
+- name: Ensure Tailscale is running
+  become: true
+  ansible.builtin.systemd:
+    name: tailscaled
+    state: started
+    enabled: true
 
 - name: Join Tailnet
   become: true
+  no_log: true
   ansible.builtin.command:
-    cmd: tailscale up --authkey {{ tailscale_auth_key }} --hostname {{ tailscale_hostname }}
+    argv:
+      - "tailscale"
+      - "up"
+      - "--authkey"
+      - "{{ tailscale_auth_key }}"
+      - "--hostname"
+      - "{{ tailscale_hostname }}"
     creates: /var/lib/tailscale/tailscaled.state

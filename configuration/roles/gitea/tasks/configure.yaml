@@ -1,0 +1,37 @@
+---
+- name: Ensure Gitea role in PostgreSQL
+  when:
+    - gitea_create_database
+    - _gitea_postgres_user != gitea_postgres_super_user
+  community.postgresql.postgresql_user:
+    name: "{{ gitea_postgres_user }}"
+    password: "{{ gitea_postgres_password }}"
+    login_user: "{{ gitea_postgres_super_user }}"
+    login_password: "{{ gitea_postgres_super_password }}"
+    login_host: "{{ gitea_postgres_host }}"
+    login_port: "{{ gitea_postgres_port }}"
+    state: present
+
+- name: Ensure Gitea database in PostgreSQL
+  when:
+    - gitea_create_database
+  community.postgresql.postgresql_db:
+    name: "{{ gitea_postgres_database }}"
+    owner: "{{ _gitea_postgres_user }}"
+    encoding: UTF8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+    login_user: "{{ gitea_postgres_super_user }}"
+    login_password: "{{ gitea_postgres_super_password }}"
+    login_host: "{{ gitea_postgres_host }}"
+    login_port: "{{ gitea_postgres_port }}"
+    state: present
+
+- name: Copy Gitea compose template
+  notify:
+    - Restart Gitea
+  ansible.builtin.template:
+    src: compose.yaml.jinja
+    dest: "{{ gitea_project_src }}/compose.yaml"
+    mode: "0600"

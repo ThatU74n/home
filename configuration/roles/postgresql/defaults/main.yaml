@@ -1,0 +1,10 @@
+---
+postgresql_tag:
+postgresql_project_src: "{{ ansible_facts['env']['HOME'] }}/postgres"
+postgresql_data_path:
+postgresql_super_user:
+postgresql_super_password:
+postgresql_host: localhost
+postgresql_user:
+postgresql_password:
+postgresql_database:

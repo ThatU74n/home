@@ -1,0 +1,31 @@
+---
+- name: Install dependencies
+  when:
+    - gitea_create_database
+  become: true
+  ansible.builtin.package:
+    name: python3-psycopg2
+    state: present
+
+- name: Check PostgreSQL is reachable
+  when: gitea_create_database
+  community.postgresql.postgresql_ping:
+    login_host: "{{ gitea_postgres_host }}"
+    login_port: "{{ gitea_postgres_port }}"
+    login_user: "{{ gitea_postgres_super_user }}"
+    login_password: "{{ gitea_postgres_super_password }}"
+
+- name: Get Gitea admin user
+  when: gitea_create_admin_user
+  changed_when: false
+  ignore_errors: true
+  register: _gitea_admin_user_check
+  community.docker.docker_container_exec:
+    container: gitea_server
+    argv:
+      - gitea
+      - --work-path
+      - /var/lib/gitea
+      - admin
+      - user
+      - list
