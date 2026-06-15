@@ -1,6 +1,39 @@
----
-- name: Configure Worker Nodes
+- name: Configure CA Server
+  hosts: ca_server
+  tasks:
+    - name: Slurp CA certificate and key content
+      become: true
+      loop_control:
+        loop_var: ca
+      loop:
+        - /etc/kubernetes/pki/ca.crt
+        - /etc/kubernetes/pki/ca.key
+      register: ca_files_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ ca }}"
+
+    - name: Set CA certificate and key content facts
+      ansible.builtin.set_fact:
+        kubernetes_ca_cert_content: >-
+          "{{ (ca_files_content_slurp.results
+              | selectattr('source', 'equalto', '/etc/kubernetes/pki/ca.crt')
+              | map(attribute='content')
+              | first
+              )
+            | b64decode }}"
+        kubernetes_ca_key_content: >-
+          "{{ (ca_files_content_slurp.results
+              | selectattr('source', 'equalto', '/etc/kubernetes/pki/ca.key')
+              | map(attribute='content')
+              | first
+              )
+            | b64decode }}"
+
+- name: Worker Node
   hosts: worker
+  vars:
+    kubernetes_ca_cert_content: "{{ hostvars['ca_server']['kubernetes_ca_cert_content'] }}"
+    kubernetes_ca_key_content: "{{ hostvars['ca_server']['kubernetes_ca_key_content'] }}"
   pre_tasks:
     - name: Configure DNS
       become: true
@@ -17,6 +50,7 @@
       become: true
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: 3600
 
     - name: Update dnf cache (RedHat)
       when: ansible_facts['os_family'] == "RedHat"
@@ -46,24 +80,22 @@
 
     - name: Check swap
       become: true
-      ansible.builtin.command: swapon --show
       register: kubelet_swap_check
       changed_when: false
       failed_when: false
+      ansible.builtin.command:
+        argv:
+          - "swapon"
+          - "--show"
 
     - name: Turn off swap
       when: kubelet_swap_check.stdout != ''
       become: true
-      block:
-        - name: Turn off swap temporarily
-          ansible.builtin.command:
-            cmd: swapoff -a
-
-        - name: Turn off swap permanently
-          ansible.builtin.replace:
-            path: /etc/fstab 
-            regexp: "^([^#].*swap.*)$"
-            replace: '# \1'
+      changed_when: false
+      ansible.builtin.command:
+        argv: s
+          - "swapoff"
+          - "-a"
 
     - name: Disable swap for Kubelet
       become: true
@@ -71,12 +103,14 @@
         path: /etc/fstab
         regexp: "^([^#].*swap.*)$"
         replace: '# \1'
-   
+
   tasks:
-    - name: Containerd 
+    - name: Containerd
       ansible.builtin.import_role:
-        name: containerd 
+        name: containerd
 
     - name: Kubelet
       ansible.builtin.import_role:
-        name: kubelet 
+        name: kubelet
+      vars:
+        kubelet_version: 1.35.5

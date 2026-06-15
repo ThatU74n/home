@@ -1,7 +1,59 @@
 ---
-- name: Configure Control Plane
+- name: Configure CA Server
+  hosts: ca_server
+  tasks:
+    - name: Slurp CA certificate and key content
+      become: true
+      loop_control:
+        loop_var: ca
+      loop:
+        - /etc/etcd/pki/ca.crt
+        - /etc/etcd/pki/ca.key
+        - /etc/kubernetes/pki/ca.crt
+        - /etc/kubernetes/pki/ca.key
+      register: ca_files_content_slurp
+      ansible.builtin.slurp:
+        src: "{{ ca }}"
+
+    - name: Set CA certificate and key content facts
+      ansible.builtin.set_fact:
+        etcd_ca_cert_content: >-
+          "{{ (ca_files_content_slurp.results
+              | selectattr('source', 'equalto', '/etc/etcd/pki/ca.crt')
+              | map(attribute='content')
+              | first
+              )
+            | b64decode }}"
+        etcd_ca_key_content: >-
+          "{{ (ca_files_content_slurp.results
+              | selectattr('source', 'equalto', '/etc/etcd/pki/ca.key')
+              | map(attribute='content')
+              | first
+              )
+            | b64decode }}"
+        kubernetes_ca_cert_content: >-
+          "{{ (ca_files_content_slurp.results
+              | selectattr('source', 'equalto', '/etc/kubernetes/pki/ca.crt')
+              | map(attribute='content')
+              | first
+              )
+            | b64decode }}"
+        kubernetes_ca_key_content: >-
+          "{{ (ca_files_content_slurp.results
+              | selectattr('source', 'equalto', '/etc/kubernetes/pki/ca.key')
+              | map(attribute='content')
+              | first
+              )
+            | b64decode }}"
+
+- name: Control Plane
   hosts: control_plane
   serial: 1
+  vars:
+    etcd_ca_cert_content: "{{ hostvars['ca_server']['etcd_ca_cert_content'] }}"
+    etcd_ca_key_content: "{{ hostvars['ca_server']['etcd_ca_key_content'] }}"
+    kubernetes_ca_cert_content: "{{ hostvars['ca_server']['kubernetes_ca_cert_content'] }}"
+    kubernetes_ca_key_content: "{{ hostvars['ca_server']['kubernetes_ca_key_content'] }}"
   pre_tasks:
     - name: Configure DNS
       become: true
@@ -14,13 +66,14 @@
         marker: "# {mark} ANSIBLE MANAGED BLOCK - DNS CONFIGURATION"
 
     - name: Update apt cache (Debian)
-      when: ansible_facts['os_family'] == "Debian"
+      when: ansible_facts['os_family'] == 'Debian'
       become: true
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: 3600
 
     - name: Update dnf cache (RedHat)
-      when: ansible_facts['os_family'] == "RedHat"
+      when: ansible_facts['os_family'] == 'RedHat'
       become: true
       ansible.builtin.dnf:
         update_cache: true
@@ -29,13 +82,6 @@
       when: ansible_facts['os_family'] == 'ArchLinux'
       community.general.pacman:
         update_cache: true
-
-    - name: Ensure dependencies
-      become: true
-      ansible.builtin.package:
-        name:
-          - python3-cryptography
-        state: present
 
     - name: Enable IPv4 forwarding for Containerd
       become: true
@@ -47,24 +93,22 @@
 
     - name: Check swap
       become: true
-      ansible.builtin.command: swapon --show
       register: kubelet_swap_check
       changed_when: false
       failed_when: false
+      ansible.builtin.command:
+        argv:
+          - "swapon"
+          - "--show"
 
     - name: Turn off swap
       when: kubelet_swap_check.stdout != ''
       become: true
-      block:
-        - name: Turn off swap temporarily
-          ansible.builtin.command:
-            cmd: swapoff -a
-
-        - name: Turn off swap permanently
-          ansible.builtin.replace:
-            path: /etc/fstab 
-            regexp: "^([^#].*swap.*)$"
-            replace: '# \1'
+      changed_when: false
+      ansible.builtin.command:
+        argv: s
+          - "swapoff"
+          - "-a"
 
     - name: Disable swap for Kubelet
       become: true
@@ -72,41 +116,41 @@
         path: /etc/fstab
         regexp: "^([^#].*swap.*)$"
         replace: '# \1'
-  tasks:
-    - name: Generate Etcd CA 
-      ansible.builtin.import_role:
-        name: certificate-authority
-      vars:
-        ca_key_path: /etc/etcd/pki/ca.key 
-        ca_cert_path: /etc/etcd/pki/ca.crt 
-        ca_common_name: Etcd CA
 
-    - name: Generate Kubernetes CA 
+  tasks:
+    - name: Tailscale
       ansible.builtin.import_role:
-        name: certificate-authority
-      vars:
-        ca_key_path: /etc/kubernetes/pki/ca.key 
-        ca_cert_path: /etc/kubernetes/pki/ca.crt 
-        ca_common_name: Kubernetes CA
+        name: tailscale
+
+    - name: Refresh network facts
+      ansible.builtin.setup:
+        gather_subset:
+          - network
 
     - name: Etcd
       ansible.builtin.import_role:
         name: etcd
       vars:
-        etcd_advertise_server_address: "{{ ansible_facts['default_ipv4']['address'] }}"
-        etcd_advertise_peer_address: "{{ ansible_facts['default_ipv4']['address'] }}"
+        etcd_version: 3.6.10
 
-    - name: Kube-apiserver
+
+    - name: Kubernetes API Server
       ansible.builtin.import_role:
         name: kube-apiserver
+      vars:
+        kube_api_server: 1.35.5
 
-    - name: Kube-controller-manager
+    - name: Kubernetes Controller manager
       ansible.builtin.import_role:
         name: kube-controller-manager
+      vars:
+        kube_controller_manager_version: 1.35.5
 
-    - name: Kube-scheduler
+    - name: Kubernetes Scheduler
       ansible.builtin.import_role:
         name: kube-scheduler
+      vars:
+        kube_scheduler_version: 1.35.5
 
     - name: Containerd
       ansible.builtin.import_role:
@@ -115,5 +159,5 @@
     - name: Kubelet
       ansible.builtin.import_role:
         name: kubelet
-
-
+      vars:
+        kubelet_version: 1.35.5
