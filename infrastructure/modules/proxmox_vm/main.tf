@@ -1,54 +1,69 @@
+# TODO: wait for proxmox_cloned_vm to be out of experimental
+# - check again in proxmox v1.0
+# - proxmox_virtual_environment_vm is marked as deprecated, switch from proxmox_virtual_environment_vm to proxmox_vm in v1.0 
+
 resource "proxmox_virtual_environment_vm" "this" {
-  name      = var.proxmox_vm_name
-  node_name = "pve"
-  vm_id     = var.proxmox_vm_id
+  node_name = var.node_name
+
+  name  = var.vm_name
+  vm_id = var.vm_id
   operating_system {
-    type = "l26"
+    type = var.os_type
   }
   cpu {
-    cores = var.proxmox_vm_cpu_cores
+    cores = var.vm_cpu_cores
     type  = "host"
   }
   memory {
-    dedicated = var.proxmox_vm_memory_dedicated
+    dedicated = var.vm_memory_dedicated
   }
   disk {
-    size         = var.proxmox_vm_disk_size
+    size         = var.vm_disk_size
     interface    = "scsi0"
     datastore_id = "local-lvm"
     iothread     = true
+  }
 
+  dynamic "network_device" {
+    for_each = var.vm_network_devices
+    content {
+      bridge = network_device.value.bridge
+      model  = network_device.value.model
+      mtu    = network_device.value.mtu
+    }
   }
-  network_device {
-    model  = "virtio"
-    bridge = "vmbr0"
-    mtu    = "1500"
-  }
-  clone {
-    vm_id = var.proxmox_vm_template_id
-    full  = false
+
+  dynamic "clone" {
+    for_each = var.vm_template_id != null ? [1] : []
+    content {
+      vm_id = var.vm_template_id
+      full  = false
+    }
   }
   agent {
-    enabled = true
+    enabled = var.enable_agent
   }
-  initialization {
-    ip_config {
-      ipv4 {
-        address = var.cloud_init_ipv4_address
-        gateway = var.cloud_init_ipv4_gateway
+  dynamic "initialization" {
+    for_each = var.enable_cloud_init ? [1] : []
+    content {
+      interface = "ide2"
+      ip_config {
+        ipv4 {
+          address = var.cloud_init_ipv4_address
+          gateway = var.cloud_init_ipv4_gateway
+        }
+      }
+      dns {
+        servers = var.cloud_init_dns_servers
+      }
+
+      user_account {
+        username = var.cloud_init_user_account_username
+        keys     = var.cloud_init_user_account_public_keys
       }
     }
-    dns {
-      servers = ["1.1.1.1", "8.8.8.8"]
-    }
-    user_account {
-      username = var.cloud_init_user_account_username
-      keys     = var.cloud_init_user_account_public_keys
-    }
-    # Additional configurations
   }
+
   tags = var.tags
 }
-
-
 

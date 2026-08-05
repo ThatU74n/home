@@ -4,12 +4,12 @@
 .venv
 
 # Terraform
-infrastructure/*.tfvars
-infrastructure/*.tfstate
-infrastructure/*.tfstate.backup
-infrastructure/.terraform.lock.hcl
-infrastructure/.terraform
-infrastructure/.terraform/*
+infrastructure/**/*.tfvars
+infrastructure/**/*.tfstate
+infrastructure/**/*.tfstate.backup
+infrastructure/**/*.terraform.lock.hcl
+infrastructure/**/*.terraform
+infrastructure/**/*.terraform/*
 
 # Ansible
 .ansible 
