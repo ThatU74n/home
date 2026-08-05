@@ -1,23 +1,22 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
----
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app
+  name: coredns
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: kube-system
   project: default
-  source:
-    repoURL: http://gitea.u74n.com/utan/home.git
-    ref: main
-    path: k8s/gitops/
-    directory:
-      recurse: true
+  sources:
+    - repoURL: https://coredns.github.io/helm
+      chart: coredns
+      targetRevision: 1.14.6
   syncPolicy:
     automated:
       selfHeal: true

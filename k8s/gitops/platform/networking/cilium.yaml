@@ -3,21 +3,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app
+  name: cilium
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: 0
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: kube-system
   project: default
-  source:
-    repoURL: http://gitea.u74n.com/utan/home.git
-    ref: main
-    path: k8s/gitops/
-    directory:
-      recurse: true
+  sources:
+    - repoURL: https://gitea.u74n.com/utan/home.git
+      targetRevision: main
+      ref: src
+
+    - repoURL: https://helm.cilium.io/
+      chart: cilium
+      targetRevision: 1.20.0
+      helm:
+        valueFiles:
+          - $src/k8s/platform/networking/cilium/values.yaml
+
+    - repoURL: https://gitea.u74n.com/utan/home.git
+      targetRevision: main
+      path: k8s/platform/networking/cilium
+
   syncPolicy:
     automated:
       selfHeal: true
