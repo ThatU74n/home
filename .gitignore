@@ -16,6 +16,10 @@ infrastructure/.terraform/*
 configuration/.ansible
 
 
+# K8s 
+k8s/secret/**
+!k8s/secret/*.example.yaml
+
 vault.key
 
 .env
