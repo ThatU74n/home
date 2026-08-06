@@ -1,4 +1,17 @@
 ---
+- name: Disable zram swap service
+  become: true
+  failed_when: false
+  changed_when: false
+  ansible.builtin.service:
+    name: zramswap
+    state: stopped
+
+- name: Disable swap
+  become: true
+  changed_when: false
+  ansible.builtin.command: swapoff -a
+
 - name: Check swap
   become: true
   ansible.builtin.command: swapon --show
