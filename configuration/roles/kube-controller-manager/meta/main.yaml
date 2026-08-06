@@ -12,7 +12,7 @@ argument_specs:
       - "Kubernetes controller manager is a daemon that embeds the core control loops"
       - "A control loop is a non-termination loop that regulates the state of the system"
       - "You can supply your own PKI key pairs as variables, or let the role provision them"
-      -
+      - ""
       - " * Documentation: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager"
     short_description: "Install and configure Kubernetes controller manager"
     options:
