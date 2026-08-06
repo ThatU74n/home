@@ -1,0 +1,10 @@
+---
+ansible_user: u74n
+
+# Nginx
+nginx_profile: vostro
+nginx_sites_enabled:
+  - gitea.u74n.internal.conf
+
+# Tailscale
+tailscale_hostname: vostro

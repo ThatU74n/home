@@ -1,28 +1,33 @@
 ---
 all:
   children:
-    ca_server:
+    proxmox:
+
+    proxmox_backup_server:
       hosts:
-        ca_server:
-          ansible_host: 127.0.0.1
-          ansible_port: 49930
-          ansible_user: onethird
-          ansible_private_key_file: ~/.lima/_config/user
-    # Managed by Proxmox
+        vostro:
+          ansible_host: 192.168.10.20
+          ansible_user: u74n
+          ansible_private_key_file: ~/.ssh/id_ed25519
+
+    firewall:
+
+
+    ca:
+      hosts:
+        stepca:
+          ansible_user: root
+
     gitea:
-    # Managed by Proxmox
+      hosts:
+        vostro:
+
+
     control_plane:
-    # Managed by Proxmox
+
     worker:
-      # My old dell vostro
-      # hosts:
-      #   dell_vostro:
-      #     ansible_host: 192.168.1.24
-      #     ansible_user: k-u74n
-      #     ansible_become: true
-      #
+
     local:
-      # The CLI host
       hosts:
         localhost:
           ansible_connection: local
