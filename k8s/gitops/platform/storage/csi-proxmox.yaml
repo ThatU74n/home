@@ -19,12 +19,16 @@ spec:
       targetRevision: main
       ref: src
 
-    - repoURL: h
+    - repoURL: https://sergelogvinov.github.io/proxmox-csi-plugin
       targetRevision: main
-      chart: asc
+      chart: csi-proxmox
       helm:
         valueFiles:
           - $src/k8s/platform/storage/csi-proxmox/values.yaml
+
+    - repoURL: https://gitea.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/storage/csi-proxmox
 
   syncPolicy:
     automated:
