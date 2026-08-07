@@ -3,29 +3,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: external-secret-operator
+  name: cert-manager
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: cert-manager
   project: default
   sources:
-    - repoURL: https://charts.external-secrets.io
-      chart: external-secret-operator
-      targetRevision: 0.14.3
+    - repoURL: quay.io/jetstack/charts
+      chart: cert-manager
+      targetRevision: v1.21.0
 
-    - repoURL: http://gitea.u74n.personal/utan/home.git
+    - repoURL: quay.io/jetstack/charts
+      chart: trust-manager
+      targetRevision: v0.24.0
+
+    - repoURL: https://gitea.u74n.internal/utan/home
       targetRevision: main
-      path: k8s/platform/security/eso
+      path: k8s/platform/security/cert-manager
   syncPolicy:
     automated:
-      selfHeal: true
       prune: true
+      selfHeal: true
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true

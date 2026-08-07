@@ -6,7 +6,7 @@ metadata:
   name: csi-proxmox
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: 1
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -25,6 +25,7 @@ spec:
       helm:
         valueFiles:
           - $src/k8s/platform/storage/csi-proxmox/values.yaml
+
   syncPolicy:
     automated:
       selfHeal: true
