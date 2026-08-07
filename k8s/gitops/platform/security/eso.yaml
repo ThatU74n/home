@@ -1,8 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: coredns
+  name: external-secret-operator
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: 0
@@ -11,12 +12,16 @@ metadata:
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
+    namespace: default
   project: default
   sources:
-    - repoURL: https://coredns.github.io/helm
-      chart: coredns
-      targetRevision: 1.14.6
+    - repoURL: https://charts.external-secrets.io
+      chart: external-secret-operator
+      targetRevision: 0.14.3
+
+    - repoURL: http://gitea.u74n.personal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/security/eso
   syncPolicy:
     automated:
       selfHeal: true
@@ -31,3 +36,4 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 2m
+

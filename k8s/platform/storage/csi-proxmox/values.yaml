@@ -1,0 +1,25 @@
+---
+existingConfigSecret: proxmox-csi-config
+
+
+config:
+  clusters:
+    - url: https://proxmox.u74n.internal:8006/api2/json
+      insecure: false
+      token_id: "kubernetes-csi@pve!csi"
+      token_secret: "secret"
+      region: Region-1
+
+# Define Proxmox storage class
+storageClass:
+  - name: proxmox-csi-xfs
+    storage: local-lvm
+    volumeBindingMode: WaitForFirstConsumer
+    reclaimPolicy: Delete
+    fstype: xfs
+    cache: none
+    ssd: true
+    mountOptions:
+      - discard
+
+

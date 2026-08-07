@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.5-standalone-strict/configmap.json
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acme-dns-config
+data:
+  config.cfg: |
+    [general]
+    listen = 0.0.0.0:53
+    protocol = both
+    domain = auth.acme-dns-u74n.internal
+    nsname = auth.acme-dns-u74n.internal
+    nsadmin = admin.u74n.internal
+    debug = false
+
+    [api]
+    ip = 0.0.0.0
+    port = 8080
+    tls = none
+    disable_registration = false
+
+    [database]
+    engine = sqlite3
+    connection = /var/lib/acme-dns/acme-dns.db
+

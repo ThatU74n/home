@@ -1,30 +1,38 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: coredns
+  name: csi-proxmox
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: 0
+    argocd.argoproj.io/sync-wave: 1
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
+    namespace: csi-proxmox
   project: default
   sources:
-    - repoURL: https://coredns.github.io/helm
-      chart: coredns
-      targetRevision: 1.14.6
+    - repoURL: https://gitea.u74n.internal/utan/home.git
+      targetRevision: main
+      ref: src
+
+    - repoURL: h
+      targetRevision: main
+      chart: asc
+      helm:
+        valueFiles:
+          - $src/k8s/platform/storage/csi-proxmox/values.yaml
   syncPolicy:
     automated:
       selfHeal: true
       prune: true
       allowEmpty: false
     syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
+      - CreateNamespace=True
+      - ServerSideApply=True
     retry:
       limit: 5
       backoff:

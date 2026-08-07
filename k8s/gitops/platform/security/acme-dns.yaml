@@ -1,26 +1,27 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
-apiVersion: argoproj.io/v1alpha1
+---
+apiVersion: argoproj.io/v1alpha
 kind: Application
 metadata:
-  name: coredns
+  name: acme-dns
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: 0
+    argocd.argoproj.io/sync-wave: 2
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
+    namespace: cert-manager
   project: default
   sources:
-    - repoURL: https://coredns.github.io/helm
-      chart: coredns
-      targetRevision: 1.14.6
+    - repoURL: https://gitea.u74n.internal/utan/home
+      targetRevision: main
+      path: k8s/platform/security/acme-dns
   syncPolicy:
     automated:
-      selfHeal: true
       prune: true
+      selfHeal: true
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true
@@ -31,3 +32,4 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 2m
+

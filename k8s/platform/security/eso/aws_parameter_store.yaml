@@ -1,0 +1,24 @@
+# Note: secret long lived in etcd, not very secure. Consider SPIRE / SPIFFE
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/external-secrets.io/secretstore_v1.json
+---
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: aws-parameter-store
+  namespace: external-secrets
+spec:
+  provider:
+    aws:
+      region: ap-southeast-1
+      service: ParameterStore
+      auth:
+        secretRef:
+          accessKeyIDSecretRef:
+            namespace: platform-secret
+            name: aws-credentials
+            key: access-key
+          secretAccessKeySecretRef:
+            namespace: platform-secret
+            name: aws-credentials
+            key: secret-access-key
