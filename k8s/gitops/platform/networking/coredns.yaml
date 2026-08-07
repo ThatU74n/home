@@ -14,9 +14,17 @@ spec:
     namespace: kube-system
   project: default
   sources:
+    - repoURL: https://gitea.u74n.internal/utan/home.git
+      targetRevision: main
+      ref: src
+
     - repoURL: https://coredns.github.io/helm
       chart: coredns
       targetRevision: 1.14.6
+      helm:
+        valueFiles:
+          - $src/k8s/platform/networking/coredns/values.yaml
+
   syncPolicy:
     automated:
       selfHeal: true
