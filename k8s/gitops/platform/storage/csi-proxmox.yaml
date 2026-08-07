@@ -19,9 +19,9 @@ spec:
       targetRevision: main
       ref: src
 
-    - repoURL: https://sergelogvinov.github.io/proxmox-csi-plugin
-      targetRevision: main
-      chart: csi-proxmox
+    - repoURL: ghcr.io/sergelogvinov/charts
+      targetRevision: 0.5.9
+      chart: proxmox-csi-plugin
       helm:
         valueFiles:
           - $src/k8s/platform/storage/csi-proxmox/values.yaml
