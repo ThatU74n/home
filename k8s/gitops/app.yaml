@@ -13,7 +13,7 @@ spec:
     namespace: default
   project: default
   source:
-    repoURL: https://gitea.u74n.com/utan/home.git
+    repoURL: https://gitea.u74n.internal/utan/home.git
     ref: main
     path: k8s/gitops/
     directory:
