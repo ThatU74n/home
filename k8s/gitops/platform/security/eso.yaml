@@ -16,10 +16,10 @@ spec:
   project: default
   sources:
     - repoURL: https://charts.external-secrets.io
-      chart: external-secret-operator
+      chart: external-secrets
       targetRevision: 0.14.3
 
-    - repoURL: http://gitea.u74n.personal/utan/home.git
+    - repoURL: https://gitea.u74n.internal/utan/home.git
       targetRevision: main
       path: k8s/platform/security/eso
   syncPolicy:
