@@ -12,7 +12,7 @@ metadata:
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: external-secrets
   project: default
   sources:
     - repoURL: https://charts.external-secrets.io
