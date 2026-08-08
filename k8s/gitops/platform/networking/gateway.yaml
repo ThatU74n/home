@@ -11,7 +11,7 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
-    name: https://kubernetes.default.svc
+    server: https://kubernetes.default.svc
     namespace: gateway
   project: default
   sources:
