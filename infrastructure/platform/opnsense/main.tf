@@ -9,7 +9,7 @@ locals {
       "192.168.10.100 - 192.168.10.200"
     ]
   }
-  unbound_dns_records = [
+  unbound_host_overrides = [
     {
       description = "K8s Cilium gateway wild card"
       hostname    = "*"
@@ -25,10 +25,17 @@ locals {
       type        = "A"
     },
     {
+      description = "CA Server"
+      hostname    = "ca"
+      domain      = "u74n.internal"
+      server      = "192.168.10.5"
+      type        = "A"
+    },
+    {
       description = "Proxmox"
       hostname    = "proxmox"
       domain      = "u74n.internal"
-      server      = "192.168.10.7"
+      server      = "192.168.10.11"
       type        = "A"
     },
     {
@@ -38,6 +45,8 @@ locals {
       server      = "192.168.10.20"
       type        = "A"
     }
+  ]
+  dns_zones = [
   ]
 }
 
@@ -49,12 +58,21 @@ resource "opnsense_kea_dhcpv4_subnet" "opnsense_dhcp_pool" {
   pools       = local.kea_dhcpv4_subnet.pools
 }
 
-resource "opnsense_unbound_host_override" "opnsense_unbound_dns_overrides" {
-  for_each = { for record in local.unbound_dns_records : "${record.hostname}.${record.domain}" => record }
+resource "opnsense_unbound_host_override" "opnsense_unbound_host_overrides" {
+  for_each = { for record in local.unbound_host_overrides : "${record.hostname}.${record.domain}" => record }
 
   description = each.value.description
   hostname    = each.value.hostname
   domain      = each.value.domain
   server      = each.value.server
   type        = each.value.type
+}
+
+resource "opnsense_unbound_forward" "dns_zone" {
+  for_each = { for record in local.dns_zones : "${record.domain}" => record }
+
+  enabled     = each.value.enabled
+  domain      = each.value.domain
+  server_ip   = each.value.server_ip
+  server_port = each.value.server_port
 }

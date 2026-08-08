@@ -1,6 +1,0 @@
----
-- name: Preflight
-  ansible.builtin.import_tasks: preflight.yaml
-
-- name: Install CNI plugins
-  ansible.builtin.import_tasks: "{{ _cni_installation_mode }}-{{ _cni_name }}.yaml"

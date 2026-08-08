@@ -7,8 +7,13 @@ metadata:
 spec:
   sources:
     - secret:
-        name: internal-ca
-        key: ca.crt
+        name: step-ca-root
+        key: tls.crt
+
   target:
     configMap:
-      key: ca.crt
+      key: internal-ca.crt
+      metadata:
+        labels:
+          app.kubernetes.io/component: trust-bundler
+
