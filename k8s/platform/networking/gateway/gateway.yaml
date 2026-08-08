@@ -18,8 +18,11 @@ spec:
       port: 443
       protocol: HTTPS
       hostname: "*.k8s.u74n.internal"
+      allowedRoutes:
+        namespaces:
+          from: All
       tls:
         mode: Terminate
         certificateRefs:
-            - name: k8s-wildcard-tls
-              namespace: cert-manager
+          - name: k8s-wildcard-tls
+            namespace: cert-manager
