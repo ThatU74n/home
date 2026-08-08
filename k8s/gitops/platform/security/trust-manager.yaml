@@ -3,7 +3,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cert-manager
+  name: trust-manager
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "1"
@@ -20,15 +20,15 @@ spec:
       ref: src
 
     - repoURL: quay.io/jetstack/charts
-      targetRevision: v1.21.0
-      chart: cert-manager
+      targetRevision: v0.24.0
+      chart: trust-manager
       helm:
         valueFiles:
-          - $src/k8s/platform/security/values.yaml
+          - $src/k8s/platform/security/trust-manager/values.yaml
 
     - repoURL: https://gitea.u74n.internal/utan/home.git
       targetRevision: main
-      path: k8s/platform/security/cert-manager
+      path: k8s/platform/security/trust-manager
 
   syncPolicy:
     automated:
