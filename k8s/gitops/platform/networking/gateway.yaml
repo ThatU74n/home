@@ -16,7 +16,7 @@ spec:
   project: default
   sources:
     - repoURL: https://github.com/kubernetes-sigs/gateway-api
-      targetRevision: release-1.4
+      targetRevision: release-1.6
       path: config/crd/standard
 
     - repoURL: https://gitea.u74n.internal/utan/home.git
