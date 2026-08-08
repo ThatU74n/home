@@ -24,7 +24,7 @@ spec:
       chart: cert-manager
       helm:
         valueFiles:
-          - $src/k8s/platform/security/values.yaml
+          - $src/k8s/platform/security/cert-manager/values.yaml
 
     - repoURL: https://gitea.u74n.internal/utan/home.git
       targetRevision: main
