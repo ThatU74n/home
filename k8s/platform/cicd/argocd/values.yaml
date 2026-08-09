@@ -5,7 +5,7 @@ global:
     format: text
     level: info
 
-config:
+configs:
   params:
     server.insecure: true
 
