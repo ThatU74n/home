@@ -24,7 +24,7 @@ spec:
   # Apply to Deployment, StatefulSet, DaemonSet that has the corresponding label
   # indicated that they need the CA to communicate with outside k8s service
   targetMatchConstraints:
-    labelSelector:
+    objectSelector:
       matchLabels:
         internal-ca: "true"
     resourceRules:

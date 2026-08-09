@@ -59,11 +59,11 @@ spec:
           "ports": dyn([
             {
               "protocol": "UDP",
-              "port": 53
+              "port": "53"
             },
             {
               "protocol": "TCP",
-              "port": 53
+              "port": "53"
             }
           ])
         }
