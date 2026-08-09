@@ -8,6 +8,7 @@ services:
       - app=gitea
     environment:
       GITEA__security__INSTALL_LOCK: "true"
+      GITEA__server__ROOT_URL: "https://gitea.u74n.internal"
       GITEA__webhook__ALLOWED_HOST_LIST: "private"
       GITEA__webhook__SKIP_TLS_VERIFY: "true"
       GITEA__database__DB_TYPE: postgres
