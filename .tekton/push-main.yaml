@@ -1,0 +1,18 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: push-main
+  annotations:
+    pipelinesascode.tekton.dev/on-event: "[push]"
+    pipelinesascode.tekton.dev/on-target-branch: "[main]"
+spec:
+  pipelineSpec:
+    tasks:
+      - name: hello
+        taskSpec:
+          steps:
+            - name: echo
+              image: alpine
+              script: |
+                echo "Hello World"
