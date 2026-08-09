@@ -1,0 +1,20 @@
+apiVersion: operator.tekton.dev/v1alpha1
+kind: TektonConfig
+metadata:
+  name: config
+spec:
+  targetNamespace: tekton
+  profile: all
+
+  dashboard:
+    readonly: true
+    options:
+      disabled: false
+      configMaps: {}
+      deployments: {}
+      webhookConfigurationOptions: {}
+
+  chain:
+    generateSigningSecret": true
+
+
