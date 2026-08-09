@@ -14,7 +14,5 @@ spec:
       deployments: {}
       webhookConfigurationOptions: {}
 
-  chain:
-    generateSigningSecret": true
 
 
