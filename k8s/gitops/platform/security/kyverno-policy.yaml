@@ -6,7 +6,7 @@ metadata:
   name: kyverno-policy
   namespace: argocd
   annotations:
-    argocd.argoproj.io/syncwave: "4"
+    argocd.argoproj.io/sync-wave: "4"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
