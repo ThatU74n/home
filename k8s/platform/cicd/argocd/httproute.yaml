@@ -6,7 +6,9 @@ metadata:
   name: argocd-server-route
 spec:
   parentRefs:
-    - name: cilium-gw
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: cilium-gw
       namespace: gateway
       sectionName: https
   hostnames:
@@ -17,6 +19,8 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: argocd-server
+        - group: ""
+          kind: Service
+          name: argocd-server
           port: 80
 

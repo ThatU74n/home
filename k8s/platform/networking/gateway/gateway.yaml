@@ -24,5 +24,7 @@ spec:
       tls:
         mode: Terminate
         certificateRefs:
-          - name: k8s-wildcard-tls
+          - group: ""
+            kind: Secret
+            name: k8s-wildcard-tls
             namespace: cert-manager
