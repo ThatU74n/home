@@ -3,10 +3,11 @@ apiVersion: pipelinesascode.tekton.dev/v1alpha1
 kind: Repository
 metadata:
   name: home
-  namespace: pipelines-as-code
+  namespace: gitea
 spec:
   url: https://gitea.u74n.internal/utan/home
   git_provider:
+    url: https://gitea.u74n.internal
     secret:
       name: "gitea-webhook-secret"
       key: "provider.token"
