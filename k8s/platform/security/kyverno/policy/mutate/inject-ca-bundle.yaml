@@ -1,0 +1,126 @@
+---
+apiVersion: policies.kyverno.io/v1alpha1
+kind: NamespacedMutatingPolicy
+metadata:
+  name: inject-ca-bundle
+spec:
+  evaluation:
+    mutateExisting:
+      enabled: true
+  # Trigger when CA bundle is injected to a namespace by trust manager
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - ''
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - configmaps
+        resourceNames:
+          - "internal-ca"
+  # Apply to Deployment, StatefulSet, DaemonSet that has the corresponding label
+  # indicated that they need the CA to communicate with outside k8s service
+  targetMatchConstraints:
+    labelSelector:
+      matchLabels:
+        internal-ca: "true"
+    resourceRules:
+      - apiGroups:
+          - apps
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - deployments
+          - statefulsets
+          - daemonsets
+
+  variables:
+    - name: containers
+      expression: >-
+        object.spec.template.spec.containers
+
+    - name: initContainers
+      expression: >-
+        object.spec.template.spec.?initContainers.orValue([])
+
+    - name: volumes
+      expression: >-
+        object.spec.template.spec.?volumes.orValue([])
+
+
+  mutations:
+    # Upsert ca bundle config map as a volume,
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            spec: Object.spec{
+              template: Object.spec.template{
+                spec: Object.spec.template.spec{
+                  volumes:
+                    variables.volumes.exists(v, v.name == "ca-bundle")
+                    ? variables.volumes
+                    : variables.volumes + [
+                      Object.spec.template.spec.volumes{
+                        name: "ca-bundle",
+                        configMap: Object.spec.template.spec.volumes.configMap{
+                          name: "internal-ca"
+                        }
+                      }
+                    ]
+                }
+              }
+            }
+          }
+
+    # Mount the volume to /etc/ssl/certs/
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            spec: Object.spec{
+              template: Object.spec.template{
+                spec: Object.spec.template.spec{
+                  containers: variables.containers.map(c,
+                    Object.spec.template.spec.containers{
+                      name: c.name,
+                      volumeMounts:
+                        c.?volumeMounts.orValue([]).exists(v, v.name == "ca-bundle")
+                        ? c.?volumeMounts.orValue([])
+                        : c.?volumeMounts.orValue([]) + [
+                          Object.spec.template.spec.containers.volumeMounts{
+                            name: "ca-bundle",
+                            mountPath: "/etc/ssl/certs/internal-ca.crt",
+                            subPath: "internal-ca.crt"
+                          }
+                        ]
+                    }
+                  ),
+                  initContainers: variables.initContainers.map(c,
+                    Object.spec.template.spec.initContainers{
+                      name: c.name,
+                      volumeMounts:
+                        c.?volumeMounts.orValue([]).exists(v, v.name == "ca-bundle")
+                        ? c.?volumeMounts.orValue([])
+                        : c.?volumeMounts.orValue([]) + [
+                          Object.spec.template.spec.initContainers.volumeMounts{
+                            name: "ca-bundle",
+                            mountPath: "/etc/ssl/certs/internal-ca.crt",
+                            subPath: "internal-ca.crt"
+                          }
+                        ]
+                    }
+                  )
+                }
+              }
+            }
+          }
+
+
+

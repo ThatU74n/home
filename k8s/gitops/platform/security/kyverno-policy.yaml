@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyverno-policy
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/syncwave: "4"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kyverno
+  project: default
+  sources:
+    - repoURL: http://gitea.u74n.com/utan/home.git
+      targetRevision: main
+      path: k8s/platform/security/kyverno/policy/
+      directory:
+        recurse: true
+
+  syncPolicy:
+    automated:
+      enabled: true
+      selfHeal: true
+      prune: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 2m
+
+
+
+
