@@ -9,6 +9,7 @@ services:
     environment:
       GITEA__security__INSTALL_LOCK: "true"
       GITEA__webhook__ALLOWED_HOST_LIST: "private"
+      GITEA__webhook__SKIP_TLS_VERIFY: "true"
       GITEA__database__DB_TYPE: postgres
       GITEA__database__HOST: {{ _gitea_postgres_host }}:{{ gitea_postgres_port }}
       GITEA__database__NAME: {{ gitea_postgres_database }}
