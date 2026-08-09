@@ -26,12 +26,9 @@ spec:
         valueFiles:
           - $src/k8s/platform/cicd/argocd/values.yaml
 
-    - repoURL: https://gitea.u74n.internal/utan/home.git
-      targetRevision: main
-      path: k8s/platform/cicd/argocd/
-
   syncPolicy:
     automated:
+      prune: true
       enabled: true
       selfHeal: true
       allowEmpty: false

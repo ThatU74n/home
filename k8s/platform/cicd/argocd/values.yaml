@@ -1,8 +1,13 @@
 ---
 global:
+  domain: argocd.k8s.u74n.internal
   logging:
     format: text
     level: info
+
+config:
+  params:
+    server.insecure: true
 
 controller:
   replicas: 1
@@ -15,7 +20,6 @@ controller:
       memory: 512Mi
 
 server:
-  insecure: true
   replicas: 1
   resources:
     requests:
@@ -26,8 +30,14 @@ server:
       memory: 256Mi
   service:
     type: ClusterIP
-  ingress:
-    enabled: false
+  httproute:
+    enabled: true
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: cilium-gw
+        namespace: gateway
+        sectionName: https
 
 repoServer:
   replicas: 1
