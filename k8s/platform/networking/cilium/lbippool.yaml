@@ -9,3 +9,4 @@ spec:
     - cidr: 192.168.10.0/24
       start: 192.168.10.45
       stop: 192.168.10.49
+  allowFirstLastIPs: "Yes"
