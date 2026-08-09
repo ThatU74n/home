@@ -15,6 +15,7 @@ controller:
       memory: 512Mi
 
 server:
+  insecure: true
   replicas: 1
   resources:
     requests:
