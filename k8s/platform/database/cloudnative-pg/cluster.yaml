@@ -10,7 +10,7 @@ spec:
   instances: 1
   storage:
     size: 50Gi
-    storageClass: proxmox-storage-xfs
+    storageClass: proxmox-storage-zfs
     resizeInUseVolumes: true
 
 
