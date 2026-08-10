@@ -1,0 +1,11 @@
+---
+operatorConfig:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
