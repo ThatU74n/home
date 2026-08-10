@@ -4,11 +4,12 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Pooler
 metadata:
   name: postgresql-pooler
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   cluster:
     name: postgresql-cluster
-  instances: 2
+  instances: 1
   type: rw
   pgbouncer:
     poolMode: transaction
-

@@ -26,9 +26,10 @@ spec:
         valueFiles:
           - $src/k8s/platform/database/cloudnative-pg/values.yaml
 
-    # - repoURL: https://gitea.u74n.com/utan/home.git
-    #   targetRevision: main
-    #   path: k8s/platform/database/cloudnative-pg
+    - repoURL: https://gitea.u74n.com/utan/home.git
+      targetRevision: main
+      path: k8s/platform/database/cloudnative-pg
+
   syncPolicy:
     automated:
       selfHeal: true

@@ -4,10 +4,13 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: postgresql-cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
-  instances: 3
+  instances: 1
   storage:
-    size: 100GB
-    storageClass: longhorn
+    size: 50Gi
+    storageClass: proxmox-storage-xfs
     resizeInUseVolumes: true
+
 
