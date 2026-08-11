@@ -8,7 +8,9 @@ service:
     type: ClusterIP
   ssh:
     annotations:
-    type: ClusterIP
+      tailscale.cim/hostname: "gitea"
+    type: LoadBalancer
+    loadBalancerClass: tailscale
 
 ingress:
   enabled: false
