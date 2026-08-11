@@ -12,5 +12,16 @@ spec:
     size: 50Gi
     storageClass: proxmox-csi-xfs
     resizeInUseVolumes: true
+  managed:
+    roles:
+      # Role for Gitea to connect to database
+      - connectionLimit: -1
+        ensure: present
+        inherit: true
+        name: gitea
+        superuser: false
+        login: true
+        passwordSecret:
+          name: gitea-db-cred
 
 
