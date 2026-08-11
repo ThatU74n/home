@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://github.com/datreeio/CRDs-catalog/raw/refs/heads/main/external-secrets.io/externalsecret_v1.json
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gitea-admin-cred
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - external-secrets.io/finalizers
+spec:
+  refreshInterval: 12h
+  secretStoreRef:
+    name: aws-parameter-store
+    kind: ClusterSecretStore
+  target:
+    name: gitea-admin-cred
+    template:
+      engineVersion: v2
+      mergePolicy: Replace
+      data:
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+        email: "{{ .email }}"
+  data:
+    - remoteRef:
+        key: /home/gitea/admin/username
+      secretKey: username
+    - remoteRef:
+        key: /home/gitea/admin/password
+      secretKey: password
+    - remoteRef:
+        key: /home/gitea/admin/email
+      secretKey: email
+
