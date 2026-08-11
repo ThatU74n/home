@@ -29,6 +29,8 @@ spec:
     - repoURL: https://gitea.u74n.internal/utan/home.git
       targetRevision: main
       path: k8s/platform/database/cloudnative-pg
+      directory:
+        recurse: true
 
   syncPolicy:
     automated:
