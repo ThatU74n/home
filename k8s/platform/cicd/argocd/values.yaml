@@ -10,6 +10,20 @@ global:
 configs:
   params:
     server.insecure: true
+  tls:
+    certificates:
+      gitea.k8s.u74n.internal: |
+        -----BEGIN CERTIFICATE-----
+        MIIBnjCCAUWgAwIBAgIQJQXzByrgprP9Zi5ls8OuszAKBggqhkjOPQQDAjAuMREw
+        DwYDVQQKEwhIb21lIFBLSTEZMBcGA1UEAxMQSG9tZSBQS0kgUm9vdCBDQTAeFw0y
+        NjA4MDYwMzMwMDdaFw0zNjA4MDMwMzMwMDdaMC4xETAPBgNVBAoTCEhvbWUgUEtJ
+        MRkwFwYDVQQDExBIb21lIFBLSSBSb290IENBMFkwEwYHKoZIzj0CAQYIKoZIzj0D
+        AQcDQgAE4qbbdDTpNX0CmxUVaN/yQqFL5QS2ohDVh4nO2P759r4jyHDxzPFBaJaM
+        wJsKhFwYcqa2APIEgVw1NCQaM3ld/6NFMEMwDgYDVR0PAQH/BAQDAgEGMBIGA1Ud
+        EwEB/wQIMAYBAf8CAQEwHQYDVR0OBBYEFJeA7kq2QbRnpdm/2G5a9PcPGKv9MAoG
+        CCqGSM49BAMCA0cAMEQCIGaWD0BmFNV8uiWYrvgSLmZXHqwbIm7Nh7LOwcOKyeCU
+        AiAseXqCsjcnCvYsjE91fnHVmSavBIeEgvC4uSEJl+f4yA==
+        -----END CERTIFICATE-----
 
 controller:
   replicas: 1
