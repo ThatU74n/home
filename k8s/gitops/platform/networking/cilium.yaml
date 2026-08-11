@@ -15,7 +15,7 @@ spec:
     namespace: kube-system
   project: default
   sources:
-    - repoURL: https://gitea.u74n.internal/utan/home.git
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       ref: src
 
@@ -26,7 +26,7 @@ spec:
         valueFiles:
           - $src/k8s/platform/networking/cilium/values.yaml
 
-    - repoURL: https://gitea.u74n.internal/utan/home.git
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       path: k8s/platform/networking/cilium
 

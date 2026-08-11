@@ -15,7 +15,7 @@ spec:
     namespace: kyverno
   project: default
   sources:
-    - repoURL: https://gitea.u74n.internal/utan/home.git
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       path: k8s/platform/security/kyverno/policy/
       directory:

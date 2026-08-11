@@ -14,7 +14,7 @@ spec:
     namespace: kube-system
   project: default
   sources:
-    - repoURL: https://gitea.u74n.internal/utan/home.git
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       ref: src
 

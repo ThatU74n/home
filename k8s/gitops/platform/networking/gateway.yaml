@@ -19,7 +19,7 @@ spec:
       targetRevision: release-1.6
       path: config/crd/standard
 
-    - repoURL: https://gitea.u74n.internal/utan/home.git
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       path: k8s/platform/networking/gateway
       directory:
