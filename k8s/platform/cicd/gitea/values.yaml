@@ -58,6 +58,8 @@ gitea:
     existingSecret: gitea-admin-cred
     passwordMode: keepUpdated
   config:
+    git.config:
+      uploadpack.allowReachableSHA1InWant: "true"
     database:
       DB_TYPE: postgres
       HOST: postgresql-cluster-rw.cnpg.svc.cluster.local:5432
