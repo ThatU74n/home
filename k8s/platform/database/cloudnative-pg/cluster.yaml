@@ -6,6 +6,7 @@ metadata:
   name: postgresql-cluster
   annotations:
     argocd.argoproj.io/sync-wave: "1"
+    cnpg.io/reconciliationLoop: enabled
 spec:
   instances: 1
   storage:
