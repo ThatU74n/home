@@ -1,6 +1,8 @@
 ---
 global:
   domain: argocd.k8s.u74n.internal
+  additionalLabels:
+    internal-ca: "true"
   logging:
     format: text
     level: info
