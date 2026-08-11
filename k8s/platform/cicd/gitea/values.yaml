@@ -58,7 +58,7 @@ gitea:
   config:
     database:
       DB_TYPE: postgres
-      HOST: postgresql-cluster-rw.database.svc.cluster.local:5432
+      HOST: postgresql-cluster-rw.cnpg.svc.cluster.local:5432
       NAME: giteadb
       USER: gitea
       SSL_MODE: disable
