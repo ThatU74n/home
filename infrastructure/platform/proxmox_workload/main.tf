@@ -2,15 +2,6 @@ locals {
   local_public_key = trimspace(file("~/.ssh/id_ed25519.pub"))
 }
 
-# data "terraform_remote_state" "proxmox_cluster" {
-#   backend = "s3"
-#   config = {
-#     bucket = "terraform-u74n"
-#     key    = "proxmox-cluster/terraform.tfstate"
-#     region = "ap-southeast-1"
-#   }
-# }
-
 # Customized OPNSense template with automation user
 # data "proxmox_virtual_environment_vm" "pve01_opnsense_template" {
 #   node_name = "pve01"
@@ -33,60 +24,83 @@ data "proxmox_vm" "pve02_debian_13_template" {
 #   - 1 OPNSense 
 #   - 1 k8s worker  4GB 
 module "pve01_box_opnsense" {
-  source    = "../../modules/proxmox_vm"
-  node_name = "pve1"
+  source = "../../modules/proxmox_compute/"
+
   id        = 200
+  name      = "opnsense"
+  node_name = "pve1"
+  type      = "vm"
+  tags      = ["firewall"]
 
-  is_clone_from_template = false
-  os_type                = "other"
-
-  vm_name             = "opnsense"
-  vm_cpu_cores        = 2
-  vm_memory_dedicated = 4096
-  vm_disk_size        = 56
-  vm_network_devices = [
+  compute = {
+    cpu_cores        = 2
+    memory_dedicated = 4096
+  }
+  storage = [{
+    size         = 56
+    interface    = "scsi0"
+    datastore_id = "local-lvm"
+    iothread     = true
+  }]
+  network = [
     {
-      # WAN
       bridge = "vmbr0"
       model  = "virtio"
       mtu    = "1500"
     },
     {
-      # LAN
       bridge = "vmbr1"
       model  = "virtio"
       mtu    = "1500"
     }
   ]
 
-  enable_agent      = false
-  enable_cloud_init = false
-
-  tags = ["firewall"]
+  vm_setting = {
+    enable_agent = false
+    os_type      = "other"
+  }
 }
 
 module "pve01_box_step_ca" {
-  source    = "../../modules/proxmox_lxc"
-  node_name = "pve1"
-  name      = "step-ca"
+  source = "../../modules/proxmox_compute"
+
   id        = 201
+  name      = "step-ca"
+  node_name = "pve1"
+  type      = "lxc"
+  tags      = ["ca"]
 
-  lxc_type             = "debian"
-  lxc_template_file_id = "local:vztmpl/debian-13-standard_13.6-1_amd64.tar.zst"
+  compute = {
+    cpu_cores        = 1
+    memory_dedicated = 512
+    memory_swap      = 512
+  }
+  storage = [{
+    size = 4
+  }]
+  network = [{
+    name   = "eth0"
+    model  = "virtio"
+    bridge = "vmbr1"
+  }]
 
-  lxc_cpu_cores                = 1
-  lxc_disk_size                = 4
-  lxc_memory_dedicated         = 512
-  lxc_memory_swap              = 512
-  lxc_network_interface_name   = "eth0"
-  lxc_network_interface_bridge = "vmbr1"
-  lxc_network_ipv4_address     = "192.168.10.5/24"
-  lxc_network_ipv4_gateway     = "192.168.10.1"
-  lxc_network_dns_server       = ["192.168.10.1"]
+  init = {
+    enabled           = true
+    ipv4_address      = "192.168.10.5/24"
+    ipv4_gateway      = "192.168.10.1"
+    dns_servers       = ["192.168.10.1"]
+    user_account_keys = [local.local_public_key]
+  }
 
-  init_user_account_public_keys = [local.local_public_key]
-
-  tags = ["ca"]
+  lxc_setting = {
+    os_type       = "debian"
+    template_id   = "local:vztmpl/debian-13-standard_13.6-1_amd64.tar.zst"
+    unprivileged  = true
+    start_on_boot = true
+    features = {
+      nesting = true
+    }
+  }
 }
 
 # Configure PVE 02 
@@ -95,57 +109,91 @@ module "pve01_box_step_ca" {
 # - 1 k8s controlplane 2 cores / 4GB 
 # - 2 k8s Worker 4 cores / 8 GB 
 module "pve02_control_plane" {
-  source    = "../../modules/proxmox_vm"
-  node_name = "pve2"
+  source = "../../modules/proxmox_compute"
+
   count     = 1
   id        = 150 + count.index
+  name      = "control-plane-${count.index + 1}"
+  node_name = "pve2"
+  type      = "vm"
+  tags      = ["control_plane"]
 
+  compute = {
+    cpu_cores        = 4
+    memory_dedicated = 8192
+  }
+  storage = [{
+    size         = 50
+    interface    = "scsi0"
+    datastore_id = "local-lvm"
+    iothread     = true
+  }]
+  network = [{
+    bridge = "vmbr0"
+    model  = "virtio"
+    mtu    = 1500
+  }]
 
-  is_clone_from_template = true
-  vm_template_id         = data.proxmox_vm.pve02_debian_13_template.id
-  os_type                = "l26"
-
-  vm_name             = "control-plane-${count.index + 1}"
-  vm_cpu_cores        = 4
-  vm_memory_dedicated = 8192
-  vm_disk_size        = 50
-
-  enable_agent                        = true
-  enable_cloud_init                   = true
-  cloud_init_ipv4_address             = "192.168.10.5${count.index + 1}/24"
-  cloud_init_ipv4_gateway             = "192.168.10.1"
-  cloud_init_user_account_username    = "k-u74n"
-  cloud_init_user_account_public_keys = [local.local_public_key]
-
-  tags = ["control_plane"]
+  init = {
+    enabled           = true
+    ipv4_address      = "192.168.10.5${count.index + 1}/24"
+    ipv4_gateway      = "192.168.10.1"
+    dns_servers       = ["1.1.1.1", "8.8.8.8"]
+    user_account_name = "k-u74n"
+    user_account_keys = [local.local_public_key]
+  }
+  vm_setting = {
+    enable_agent = true
+    os_type      = "l26"
+    template = {
+      id        = data.proxmox_vm.pve02_debian_13_template.id
+      node_name = "pve2"
+    }
+  }
 }
 
 module "pve02_worker_node" {
-  source    = "../../modules/proxmox_vm"
-  node_name = "pve2"
+  source = "../../modules/proxmox_compute"
+
   count     = 1
   id        = 160 + count.index
+  name      = "worker-node-${count.index + 1}"
+  node_name = "pve2"
+  type      = "vm"
+  tags      = ["worker"]
 
+  compute = {
+    cpu_cores        = 8
+    memory_dedicated = 16384
+  }
+  storage = [{
+    size         = 50
+    interface    = "scsi0"
+    datastore_id = "local-lvm"
+    iothread     = true
+  }]
+  network = [{
+    bridge = "vmbr0"
+    model  = "virtio"
+    mtu    = 1500
+  }]
 
-  is_clone_from_template = true
-  vm_template_id         = data.proxmox_vm.pve02_debian_13_template.id
-  os_type                = "l26"
-
-  vm_name             = "worker-node-${count.index + 1}"
-  vm_cpu_cores        = 8
-  vm_memory_dedicated = 16384
-  vm_disk_size        = 50
-
-  enable_agent                        = true
-  enable_cloud_init                   = true
-  cloud_init_ipv4_address             = "192.168.10.6${count.index + 1}/24"
-  cloud_init_ipv4_gateway             = "192.168.10.1"
-  cloud_init_user_account_username    = "k-u74n"
-  cloud_init_user_account_public_keys = [local.local_public_key]
-
-  tags = ["worker"]
+  init = {
+    enabled           = true
+    ipv4_address      = "192.168.10.6${count.index + 1}/24"
+    ipv4_gateway      = "192.168.10.1"
+    dns_servers       = ["1.1.1.1", "8.8.8.8"]
+    user_account_name = "k-u74n"
+    user_account_keys = [local.local_public_key]
+  }
+  vm_setting = {
+    enable_agent = true
+    os_type      = "l26"
+    template = {
+      id        = data.proxmox_vm.pve02_debian_13_template.id
+      node_name = "pve2"
+    }
+  }
 }
-
-
 
 # Configure PVE 03
