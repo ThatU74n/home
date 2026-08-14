@@ -58,6 +58,7 @@ gitea:
     existingSecret: gitea-admin-cred
     passwordMode: keepUpdated
   config:
+    git.config: {}
     database:
       DB_TYPE: postgres
       HOST: postgresql-cluster-rw.cnpg.svc.cluster.local:5432
