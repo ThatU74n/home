@@ -64,6 +64,8 @@ gitea:
       NAME: giteadb
       USER: gitea
       SSL_MODE: disable
+    webhook:
+      ALLOWED_HOST_LIST: "pac.k8s.u74n.internal"
   additionalConfigFromEnvs:
     - name: GITEA__database__PASSWD
       valueFrom:
