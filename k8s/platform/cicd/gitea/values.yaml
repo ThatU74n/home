@@ -3,6 +3,9 @@ global:
   storageClass: proxmox-storage-zfs
   replicaCount: 1
 
+strategy:
+  type: Recreate
+
 service:
   http:
     type: ClusterIP
