@@ -30,6 +30,8 @@ gatewayAPI:
         - gitea.k8s.u74n.internal
 
 deployment:
+  labels:
+    internal-ca: "true"
   resources:
     request:
       cpu: 100m
