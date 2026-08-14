@@ -70,6 +70,8 @@ gitea:
       NAME: giteadb
       USER: gitea
       SSL_MODE: disable
+    server:
+      ROOT_URL: https://gitea.k8s.u74n.internal # gateway route missmatch the default gen, gitea behind proxy
     webhook:
       ALLOWED_HOST_LIST: "pac.k8s.u74n.internal"
   additionalConfigFromEnvs:
