@@ -1,0 +1,44 @@
+fullnameOverride: {}
+
+image:
+  repository: grafana/grafana
+  tag: latest
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+podSecurityContext:
+
+containerSecurityContext:
+
+deployment:
+  labels: {}
+  annotations: {}
+  replicas: 1
+  resources:
+    requests:
+      cpu:
+      memory:
+    limits:
+      cpu:
+      memory:
+
+service:
+  labels:
+  annotations:
+  type: ClusterIP
+  port: 3000
+
+httproute:
+  labels:
+  annotations:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: cilium-gw
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - grafana.k8s.u74n.internal
+
+
+
