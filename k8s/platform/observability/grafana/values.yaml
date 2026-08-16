@@ -1,44 +1,75 @@
-fullnameOverride: {}
+rbac:
+  create: false
+
+serviceAccount:
+  create: false
+
+replicas: 1
+
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: grafana
+
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: grafana
+  initialDelaySeconds: 60
+  timeoutSeconds: 30
+  failureThreshold: 10
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 750Mi
+  limits:
+    memory: 1.5Gi
 
 image:
-  repository: grafana/grafana
-  tag: latest
-  pullPolicy: IfNotPresent
-  pullSecrets: []
+  tag:
 
-podSecurityContext:
-
-containerSecurityContext:
-
-deployment:
-  labels: {}
-  annotations: {}
-  replicas: 1
-  resources:
-    requests:
-      cpu:
-      memory:
-    limits:
-      cpu:
-      memory:
+env:
+  - name: GF_DATABASE_TYPE
+    value: postgres
+  - name: GF_DATABASE_HOST
+    value: postgresql-cluster-rw.cnpg.svc.cluster.local:5432
+  - name: GF_DATABASE_NAME
+    value: grafana
+  - name: GF_DATABASE_USER
+    valueFrom:
+      secretKeyRef:
+        name: grafana-db-cred
+        key: username
+  - name: GF_DATABASE_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: grafana-db-cred
+        key: password
 
 service:
-  labels:
-  annotations:
-  type: ClusterIP
-  port: 3000
+  enabled: true
+  tyoe: ClusterIP
 
-httproute:
-  labels:
-  annotations:
-  parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: cilium-gw
-      namespace: gateway
-      sectionName: https
-  hostnames:
-    - grafana.k8s.u74n.internal
+ingress:
+  enabled: false
+
+route:
+  main:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: cilium-gw
+        namespace: gateway
+        sectionName: https
+    hostnames:
+      - grafana.k8s.u74n.internal
+
+plugins:
+  - grafana-clock-panel
+  - grafana-piechart-panel
 
 
 

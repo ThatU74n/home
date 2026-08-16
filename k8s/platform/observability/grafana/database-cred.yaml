@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://github.com/datreeio/CRDs-catalog/raw/refs/heads/main/external-secrets.io/externalsecret_v1.json
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: grafana-db-cred
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  refreshInterval: 12h
+  secretStoreRef:
+    name: aws-parameter-store
+    kind: ClusterSecretStore
+  target:
+    name: grafana-db-cred
+    template:
+      engineVersion: v2
+      mergePolicy: Replace
+      data:
+        username: grafana
+        password: "{{ .password }}"
+  data:
+    - remoteRef:
+        key: /home/grafana/postgresql/password
+      secretKey: password
