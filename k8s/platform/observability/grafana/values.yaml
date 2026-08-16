@@ -27,22 +27,19 @@ resources:
     memory: 1.5Gi
 
 env:
-  - name: GF_DATABASE_TYPE
-    value: postgres
-  - name: GF_DATABASE_HOST
-    value: postgresql-cluster-rw.cnpg.svc.cluster.local:5432
-  - name: GF_DATABASE_NAME
-    value: grafana
-  - name: GF_DATABASE_USER
-    valueFrom:
-      secretKeyRef:
-        name: grafana-db-cred
-        key: username
-  - name: GF_DATABASE_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: grafana-db-cred
-        key: password
+  GF_DATABASE_TYPE: postgres
+  GF_DATABASE_HOST: postgresql-cluster-rw.cnpg.svc.cluster.local:5432
+  GF_DATABASE_NAME: grafana
+
+envValueFrom:
+  GF_DATABASE_USER:
+    secretKeyRef:
+      name: grafana-db-cred
+      key: username
+  GF_DATABASE_PASSWORD:
+    secretKeyRef:
+      name: grafana-db-cred
+      key: password
 
 service:
   enabled: true
