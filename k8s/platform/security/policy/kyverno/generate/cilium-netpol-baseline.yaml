@@ -1,0 +1,24 @@
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: cilium-network-policy
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - ''
+        apiVersions:
+          - v1
+        resources:
+          - namespaces
+        operations:
+          - CREATE
+
+  # Cilium netpol
+  # - restrict namespace to namespace
+  # - allow same namespace
+  # - allow to coredns
+  # - allow world
+  generate:
+    - expression: >-
