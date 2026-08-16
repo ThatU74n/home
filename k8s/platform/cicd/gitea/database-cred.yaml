@@ -23,4 +23,7 @@ spec:
   data:
     - remoteRef:
         key: /home/gitea/postgresql/password
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
       secretKey: password
