@@ -1,0 +1,11 @@
+kind: Kustomization
+
+namespace: monitor
+
+helmCharts:
+  - name: prometheus
+    repo: https://prometheus-community.github.io/helm-charts
+    version: 29.24.0
+    releaseName: prometheus
+    valuesFile: values.yaml
+    namespace: monitor

@@ -1,0 +1,67 @@
+alertmanager:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: false
+
+prometheus-pushgateway:
+  enabled: false
+
+rbac:
+  create: false
+
+serviceAccounts:
+  server:
+    create: false
+
+server:
+  image:
+    repository: quay.io/prometheus/prometheus
+    tag: v3.4.1
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+
+  persistentVolume:
+    size: 10Gi
+    storageClass: proxmox-csi-xfs
+
+  retention: "15d"
+
+  service:
+    type: ClusterIP
+    servicePort: 9090
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      memory: 2Gi
+
+  securityContext: {}
+
+scrapeConfigs:
+  prometheus:
+    enabled: false
+  kubernetes-api-servers:
+    enabled: false
+  kubernetes-nodes:
+    enabled: false
+  kubernetes-nodes-cadvisor:
+    enabled: false
+  kubernetes-service-endpoints:
+    enabled: false
+  kubernetes-service-endpoints-slow:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
+  kubernetes-services:
+    enabled: false
+  kubernetes-pods:
+    enabled: false
+  kubernetes-pods-slow:
+    enabled: false
