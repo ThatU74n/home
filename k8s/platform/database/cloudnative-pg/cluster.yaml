@@ -25,4 +25,12 @@ spec:
         passwordSecret:
           name: gitea-db-cred
 
+      - connectionLimit: -1
+        ensure: present
+        inherit: true
+        name: grafana
+        superuser: false
+        login: true
+        passwordSecret:
+          name: grafana-db-cred
 
