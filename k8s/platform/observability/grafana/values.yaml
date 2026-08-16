@@ -26,9 +26,6 @@ resources:
   limits:
     memory: 1.5Gi
 
-image:
-  tag:
-
 env:
   - name: GF_DATABASE_TYPE
     value: postgres
