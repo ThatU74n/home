@@ -5,6 +5,7 @@ kind: Component
 resources:
   - giteadb.yaml
   - grafana.yaml
+  - infisicaldb.yaml
 
 patches:
   - path: patch-cluster.yaml

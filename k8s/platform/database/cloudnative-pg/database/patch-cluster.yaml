@@ -24,3 +24,12 @@ spec:
         passwordSecret:
           name: grafana-db-cred
 
+      - connectionLimit: -1
+        ensure: present
+        inherit: true
+        name: infisical
+        superuser: false
+        login: true
+        passwordSecret:
+          name: infisical-db-cred
+
