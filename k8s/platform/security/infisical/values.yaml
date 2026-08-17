@@ -25,6 +25,8 @@ infisical:
   extraEnv:
     - name: REDIS_URL
       value: redis://valkey.valkey.svc.cluster.local:6379
+    - name: ALLOW_INTERNAL_IP_CONNECTIONS
+      value: true
   resources:
     requests:
       memory: 256Mi
