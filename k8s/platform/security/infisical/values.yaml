@@ -1,0 +1,32 @@
+redis:
+  enabled: false
+
+postgresql:
+  enabled: false
+  useExistingPostgresSecret:
+    enabled: true
+    existingConnectionStringSecret:
+      name: "infisical-db-connection-string"
+      key: "uri"
+
+ingress:
+  enabled: false
+
+infisical:
+  enabled: true
+  fullnameOverride: infisical
+  serviceAccount:
+    create: false
+  replicaCount: 1
+  service:
+    type: ClusterIP
+  extraEnv:
+    - name: REDIS_URL
+      value: redis://valkey.valkey.service.cluster.local:6379
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 1Gi
+

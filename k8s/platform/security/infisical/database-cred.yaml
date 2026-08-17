@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://github.com/datreeio/CRDs-catalog/raw/refs/heads/main/external-secrets.io/externalsecret_v1.json
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: infisical-db-connection-string
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - external-secrets.io/finalizers
+spec:
+  refreshInterval: 12h
+  secretStoreRef:
+    name: aws-parameter-store
+    kind: ClusterSecretStore
+  target:
+    name: infisical-db-connection-string
+    template:
+      engineVersion: v2
+      mergePolicy: Replace
+      data:
+        uri: "postgresql://infisical:{{ .password }}@postgresql-cluster-rw.cnpg.svc.cluster.local:5432/infisical"
+  data:
+    - remoteRef:
+        key: /home/infisical/postgresql/password
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
+      secretKey: password
