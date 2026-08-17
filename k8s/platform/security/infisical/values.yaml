@@ -11,6 +11,8 @@ postgresql:
 
 ingress:
   enabled: false
+  nginx:
+    enabled: false
 
 infisical:
   enabled: true
