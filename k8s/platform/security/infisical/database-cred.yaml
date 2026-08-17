@@ -15,7 +15,7 @@ spec:
       engineVersion: v2
       mergePolicy: Replace
       data:
-        uri: "postgresql://infisical:{{ .password }}@postgresql-cluster-rw.cnpg.svc.cluster.local:5432/infisical"
+        uri: "postgresql://infisical:{{ .password }}@postgresql-cluster-rw.cnpg.svc.cluster.local:5432/infisicaldb"
   data:
     - remoteRef:
         key: /home/infisical/postgresql/password
