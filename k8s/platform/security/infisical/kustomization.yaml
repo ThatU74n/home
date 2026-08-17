@@ -13,5 +13,6 @@ helmCharts:
 
 resources:
   - database-cred.yaml
+  - infisical-secrets.yaml
   - httproute.yaml
 
