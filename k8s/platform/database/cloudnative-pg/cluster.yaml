@@ -5,7 +5,6 @@ kind: Cluster
 metadata:
   name: postgresql-cluster
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
     cnpg.io/reconciliationLoop: enabled
 spec:
   instances: 1
@@ -13,24 +12,3 @@ spec:
     size: 50Gi
     storageClass: proxmox-csi-xfs
     resizeInUseVolumes: true
-  managed:
-    roles:
-      # Role for Gitea to connect to database
-      - connectionLimit: -1
-        ensure: present
-        inherit: true
-        name: gitea
-        superuser: false
-        login: true
-        passwordSecret:
-          name: gitea-db-cred
-
-      - connectionLimit: -1
-        ensure: present
-        inherit: true
-        name: grafana
-        superuser: false
-        login: true
-        passwordSecret:
-          name: grafana-db-cred
-

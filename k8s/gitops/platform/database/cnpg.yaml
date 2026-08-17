@@ -17,21 +17,7 @@ spec:
   sources:
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
-      ref: src
-
-    - repoURL: https://cloudnative-pg.github.io/charts
-      targetRevision: 0.29.0
-      chart: cloudnative-pg
-      helm:
-        valueFiles:
-          - $src/k8s/platform/database/cloudnative-pg/values.yaml
-
-    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
-      targetRevision: main
       path: k8s/platform/database/cloudnative-pg
-      directory:
-        recurse: true
-
   syncPolicy:
     automated:
       selfHeal: true
