@@ -15,10 +15,10 @@ spec:
   sources:
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
-      chart: k8s/app/trilium
+      path: k8s/app/trilium
       helm:
         valueFiles:
-          - k8s/app/trilium/values.yaml
+          - values.yaml
   syncPolicy:
     automated:
       selfHeal: true
