@@ -32,6 +32,10 @@ spec:
           name: {{ include "fullName" . }}
           port: {{ .Values.service.port }}
           weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
 {{- end -}}
 
 
