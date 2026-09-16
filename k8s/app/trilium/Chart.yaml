@@ -1,0 +1,11 @@
+---
+apiVersion: v2
+appVersion: 1.1.1
+name: trilium
+type: application
+description: A Helm chart for TriliumNext
+
+version: 0.0.1
+maintainers:
+  - name: U74n
+    url: https://github.com/ThatU74n

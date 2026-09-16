@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "fullName" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.statefulset.annotation }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
+    {{- if .Values.statefulset.labels }}
+    {{- toYaml .Values.statefulset.labels | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  serviceName: {{ include "fullName" . }}
+  selector:
+    matchLabels:
+      {{- include "selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.statefulset.annotation }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "commonLabels" . | nindent 8 }}
+        {{- if .Values.statefulset.labels }}
+        {{- toYaml .Values.statefulset.labels | nindent 8 }}
+        {{- end }}
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.statefulset.terminationGracePeriod }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: fix-permission
+          image: busybox:1.37.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - "sh"
+            - "-c"
+            - chown -R "${PUID}:${PGID}" /home/node/trilium-data
+          env:
+            - name: PUID
+              value: "{{ .Values.permission.uid }}"
+            - name: PGID
+              value: "{{ .Values.permission.gid }}"
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/trilium-data
+      containers:
+        - name: trilium
+          image: {{ include "trilium.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: USER_UID
+              value: "{{ .Values.permission.uid }}"
+            - name: USER_GID
+              value: "{{ .Values.permission.gid }}"
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/trilium-data
+            - name: config
+              mountPath: /home/node/trilium-data/config.ini
+              subPath: config.ini
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "fullName" . }}
+        - name: config
+          configMap:
+            name: {{ include "fullName" . }}

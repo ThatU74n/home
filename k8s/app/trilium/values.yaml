@@ -1,0 +1,90 @@
+replicaCount: 1
+
+statefulset:
+  annotation: {}
+  labels: {}
+  terminationGracePeriod: 30
+
+image:
+  repository: triliumnext/trilium
+  tag: v0.104.0
+  digest:
+  pullPolicy: IfNotPresent
+
+service:
+  annotations: {}
+  labels: {}
+  type: ClusterIP
+  port: 8080
+  nodePort:
+
+gatewayAPI:
+  httpRoute:
+    enabled: true
+    annotations:
+    labels:
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: cilium-gw
+        namespace: gateway
+        sectionName: https
+    hostnames:
+      - "trilium.k8s.u74n.internal"
+
+persistent:
+  annotation: {}
+  labels: {}
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: proxmox-csi-xfs
+  resources:
+    requests:
+      storage: 5Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+permission:
+  uid: 1000
+  gid: 1000
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+
+trilium:
+  general:
+    instanceName: trilium
+    noAuthentication: "false"
+    noBackup: "false"
+  network:
+    port: "8080"
+    trustedReverseProxy: "true"
+
