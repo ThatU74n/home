@@ -8,6 +8,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "2"
 spec:
   sources:
+    - useDefaultCAs: true
     - secret:
         name: step-ca-root
         key: tls.crt
