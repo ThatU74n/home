@@ -19,7 +19,7 @@ spec:
       targetRevision: main
       ref: src
 
-    - repoURL: https://valkey.io/valkey-helm/
+    - repoURL: https://valkey.io/valkey-helm
       targetRevision: 0.11.0
       chart: valkey
       helm:

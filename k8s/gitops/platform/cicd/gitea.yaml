@@ -20,7 +20,7 @@ spec:
       ref: src
 
     # source
-    - repoURL: https://dl.gitea.com/charts/
+    - repoURL: https://dl.gitea.com/charts
       targetRevision: 12.7.0
       chart: gitea
       helm:
