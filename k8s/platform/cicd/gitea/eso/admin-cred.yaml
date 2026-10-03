@@ -5,9 +5,7 @@ kind: ExternalSecret
 metadata:
   name: gitea-admin-cred
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
-  finalizers:
-    - external-secrets.io/finalizers
+    argocd.argoproj.io/sync-wave: "-10"
 spec:
   refreshInterval: 12h
   secretStoreRef:

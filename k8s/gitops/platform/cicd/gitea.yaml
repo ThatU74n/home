@@ -10,15 +10,16 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
+  project: platform
   destination:
     server: https://kubernetes.default.svc
     namespace: gitea
-  project: default
   sources:
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       ref: src
 
+    # source
     - repoURL: https://dl.gitea.com/charts/
       targetRevision: 12.7.0
       chart: gitea
@@ -26,9 +27,10 @@ spec:
         valueFiles:
           - $src/k8s/platform/cicd/gitea/values.yaml
 
+    # dependencies
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
-      path: k8s/platform/cicd/gitea
+      path: k8s/platform/cicd/gitea/eso
 
   syncPolicy:
     automated:
