@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://github.com/datreeio/CRDs-catalog/raw/refs/heads/main/argoproj.io/appproject_v1alpha1.json
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+
+spec:
+  description: Platform app project
+  sourceRepos:
+    - https://gitea.k8s.u74n.internal/utan/home.git
+    # cicd
+    - https://argoproj.github.io/argo-helm
+    - https://dl.gitea.com/charts
+    - https://helm.goharbor.io
+    # database
+    - https://valkey.io/valkey-helm
+    # networking
+    - https://helm.cilium.io
+    - https://coredns.github.io/helm
+    - https://github.com/kubernetes-sigs/gateway-api
+    - https://pkgs.tailscale.com/helmcharts
+    # security
+    - https://charts.external-secrets.io
+    - https://kyverno.github.io/kyverno
+    - quay.io/jetstack/charts
+    # storage
+    - ghcr.io/sergelogvinov/charts
+  destinations:
+    # cicd
+    - server: https://kubernetes.default.svc
+      namespace: argocd
+    - server: https://kubernetes.default.svc
+      namespace: gitea
+    - server: https://kubernetes.default.svc
+      namespace: harbor
+    # database
+    - server: https://kubernetes.default.svc
+      namespace: cnpg
+    - server: https://kubernetes.default.svc
+      namespace: valkey
+    # networking
+    - server: https://kubernetes.default.svc
+      namespace: cilium
+    - server: https://kubernetes.default.svc
+      namespace: coredns
+    - server: https://kubernetes.default.svc
+      namespace: gateway
+    - server: https://kubernetes.default.svc
+      namespace: tailscale
+    # observability
+    # security
+    - server: https://kubernetes.default.svc
+      namespace: cert-manager
+    - server: https://kubernetes.default.svc
+      namespace: external-secrets
+    - server: https://kubernetes.default.svc
+      namespace: infisical
+    - server: https://kubernetes.default.svc
+      namespace: kyverno
+    # storage
+    - server: https://kubernetes.default.svc
+      namespace: csi-proxmox
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+
+
+
+

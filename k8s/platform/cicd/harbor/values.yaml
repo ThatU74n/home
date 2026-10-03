@@ -1,0 +1,62 @@
+externalURL: https://registry.k8s.u74n.internal
+
+expose:
+  type: route
+  # TLS terminates at the cilium-gw Gateway (sectionName: https), so Harbor must
+  # not auto-generate its own cert. Left enabled, the chart mounts a "harbor-nginx"
+  # secret into core that its own template never creates when type is "route".
+  tls:
+    enabled: false
+  route:
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: cilium-gw
+        namespace: gateway
+        sectionName: https
+    hosts:
+      - registry.k8s.u74n.internal
+
+persistence:
+  enabled: true
+  persistentVolumeClaim:
+    registry:
+      storageClass: proxmox-csi-xfs
+      size: 50Gi
+    imageChartStorage:
+      type: filesystem
+
+# Use external PostgreSQL, which is CNPG
+database:
+  type: external
+  external:
+    host: postgresql-cluster-rw.cnpg.svc.cluster.local
+    port: "5432"
+    username: harbor
+    coreDatabase: harbor
+    existingSecret: harbor-db-cred
+
+
+# Use external Valkey, Valkey is the oss version of Redis
+redis:
+  type: external
+  external:
+    addr: valkey.valkey.svc.cluster.local:6379
+    coreDatabaseIndex: "4"
+    jobserviceDatabaseIndex: "5"
+    registryDatabaseIndex: "6"
+
+existingSecretAdminPassword: harbor-admin-cred
+existingSecretSecretKey: harbor-secret-key
+
+trivy:
+  enabled: false
+
+metrics:
+  enabled: false
+
+trace:
+  enabled: false
+
+internalTLS:
+  enabled: false

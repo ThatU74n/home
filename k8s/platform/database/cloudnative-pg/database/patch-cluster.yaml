@@ -27,6 +27,15 @@ spec:
       - connectionLimit: -1
         ensure: present
         inherit: true
+        name: harbor
+        superuser: false
+        login: true
+        passwordSecret:
+          name: harbor-db-cred
+
+      - connectionLimit: -1
+        ensure: present
+        inherit: true
         name: infisical
         superuser: false
         login: true

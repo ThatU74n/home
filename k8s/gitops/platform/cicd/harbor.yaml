@@ -8,21 +8,28 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "6"
 spec:
-  project: default
+  project: platform
   destination:
     server: https://kubernetes.default.svc
     namespace: harbor
   sources:
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
-      targetRevision: feat/harbor
+      targetRevision: main
       ref: src
 
+    # source
     - repoURL: https://helm.goharbor.io
       targetRevision: 1.19.2
       chart: harbor
       helm:
         valueFiles:
           - $src/k8s/platform/cicd/harbor/values.yaml
+
+    # dependencies
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/cicd/harbor/eso
+
   syncPolicy:
     automated:
       selfHeal: true
