@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.34.0-standalone-strict/secret-v1.json
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jetstack-helm
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+type: Opaque
+stringData:
+  name: jetstack
+  url: quay.io/jetstack/charts
+  type: helm
+  enableOCI: "true"

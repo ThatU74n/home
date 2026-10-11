@@ -15,16 +15,23 @@ spec:
     namespace: argocd
   project: platform
   sources:
+    # ref
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       ref: src
 
+    # source
     - repoURL: https://argoproj.github.io/argo-helm
       targetRevision: 10.2.3
       chart: argo-cd
       helm:
         valueFiles:
           - $src/k8s/platform/cicd/argocd/values.yaml
+
+    # resources
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/cicd/argocd/repository
 
   syncPolicy:
     automated:
