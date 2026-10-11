@@ -33,6 +33,10 @@ spec:
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       path: k8s/platform/cicd/tekton/repository
+
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/cicd/tekton/task
   syncPolicy:
     automated:
       enabled: true

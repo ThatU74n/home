@@ -1,0 +1,102 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/vscode-tekton/refs/heads/main/scheme/tekton.dev/v1_Task.json
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: k8s-lint
+  namespace: ci
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  displayName: K8s Lint
+  description: Linting for K8s. Including yamllint
+  workspaces:
+    - name: src
+  params:
+    - name: path
+      description: Path to run lint
+      type: string
+      default: "./"
+    - name: enable-yamllint
+      description: "Enable Yamllint check. Default: \"true\""
+      type: string
+      default: "true"
+    - name: enable-kube-linter
+      description: "Enable Kube-linter check. Default: \"true\""
+      type: string
+      default: "true"
+    - name: yamllint-config-path
+      description: "Path to Yamllint config. Optional"
+      type: string
+      default: ""
+    - name: kube-linter-config-path
+      description: "Path to Kube-linter config. Optional"
+      type: string
+      default: ""
+
+  results:
+    - name: failed
+      description: Array of checks that failed
+      type: array
+  stepTemplate:
+    workingDir: $(workspaces.src.path)
+  steps:
+    - name: yamllint
+      image: python:3.13-alpine
+      env:
+        - name: ENABLED
+          value: $(params.enable-yamllint)
+        - name: WORKING_PATH
+          value: $(params.path)
+        - name: CONFIG_PATH
+          value: $(params.yamllint-config-path)
+      script: |
+        #!/bin/sh
+        set -eu
+
+        if [ "$ENABLED" != "true" ]; then
+          printf "⏭️ Yamllint disabled. Skipping.\n"
+          exit 0
+        fi
+
+        # TODO: Use a proper image instead
+        pip install --no-cache-dir yamllint
+
+        set --
+        if [ -n "$CONFIG_PATH" ]; then
+          set -- "$@" --config-file "$CONFIG_PATH"
+        fi
+
+        printf "🔄 Starting Yamllint check...\n"
+        yamllint "$@" "$WORKING_PATH"
+        printf "✅ Finish Yamllint check.\n"
+
+
+    - name: kube-linter
+      image: ghcr.io/stackrox/kube-linter:v0.8.3-alpine
+      env:
+        - name: ENABLED
+          value: $(params.enable-kube-linter)
+        - name: WORKING_PATH
+          value: $(params.path)
+        - name: CONFIG_PATH
+          value: $(params.kube-linter-config-path)
+      script: |
+        #!/bin/sh
+        set -eu
+
+        if [ "$ENABLED" != "true" ]; then
+          printf "⏭️ Kube-linter disabled. Skipping.\n"
+          exit 0
+        fi
+
+        set --
+        if [ -n "$CONFIG_PATH" ]; then
+          set -- "$@" --config "$CONFIG_PATH"
+        fi
+
+        printf "🔄 Starting Kube-linter check...\n"
+        kube-linter lint "$@" "$WORKING_PATH"
+        printf "✅ Finish Kube-linter check.\n"
+
+

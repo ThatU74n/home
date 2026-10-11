@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/vscode-tekton/refs/heads/main/scheme/tekton.dev/v1_Task.json
+#
+# Task to lint lua src code
+#
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: lua-lint
+  namespace: ci
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  workspaces:
+    - name: src
+  params:
+    - name: path
+      description: Path to run lint
+      type: string
+      default: ./
+    - name: enable-stylua
+      description: "Enable stylua check. Default: \"true\""
+      type: string
+      default: "true"
+    - name: enable-selene
+      description: "Enable selene check. Default: \"true\""
+      type: string
+      default: "true"
+    - name: stylua-config-path
+      description: "Path to the stylua file. Optional"
+      type: string
+      default: ""
+    - name: selene-config-path
+      description: "Path to the selene file. Optional"
+      type: string
+      default: ""
+  stepTemplate:
+    image: registry.k8s.u74n.internal/tools/lua-lint:latest
+    workingDir: $(workspaces.src.path)
+  steps:
+    - name: stylua-check
+      env:
+        - name: ENABLED
+          value: $(params.enable-stylua)
+        - name: WORKING_PATH
+          value: $(params.path)
+        - name: CONFIG_PATH
+          value: $(params.stylua-config-path)
+      script: |
+        #!/bin/sh
+        set -eu
+
+        if [ "$ENABLED" != "true" ]; then
+          printf "⏭️ Stylua disabled, skipping.\n"
+          exit 0
+        fi
+
+        set --
+        if [ -n "$CONFIG_PATH" ]; then
+          set -- "$@" --config-path "$CONFIG_PATH"
+        fi
+
+        printf "🔄 Starting Stylua check...\n"
+        stylua --check "$@" "$WORKING_PATH"
+        printf "✅ Finish Stylua check.\n"
+
+
+    - name: selene
+      env:
+        - name: ENABLED
+          value: $(params.enable-selene)
+        - name: WORKING_PATH
+          value: $(params.path)
+        - name: CONFIG_PATH
+          value: $(params.selene-config-path)
+      script: |
+        #!/bin/sh
+        set -eu
+
+        if [ "$ENABLED" != "true" ]; then
+          printf "⏭️ Selene disabled, skipping.\n"
+          exit 0
+        fi
+
+        set --
+        if [ -n "$CONFIG_PATH" ]; then
+          set -- "$@" --config "$CONFIG_PATH"
+        fi
+
+        printf "🔄 Starting Selene check...\n"
+        selene "$@" "$WORKING_PATH"
+        printf "✅ Finish Selene check.\n"
