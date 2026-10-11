@@ -42,3 +42,11 @@ spec:
         passwordSecret:
           name: infisical-db-cred
 
+      - connectionLimit: -1
+        ensure: present
+        inherit: true
+        name: tekton
+        superuser: false
+        login: true
+        passwordSecret:
+          name: tekton-results-postgres

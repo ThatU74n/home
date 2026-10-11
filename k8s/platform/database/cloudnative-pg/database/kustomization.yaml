@@ -7,7 +7,4 @@ resources:
   - grafana.yaml
   - harbor.yaml
   - infisicaldb.yaml
-
-patches:
-  - path: patch-cluster.yaml
-
+  - tektonresults.yaml

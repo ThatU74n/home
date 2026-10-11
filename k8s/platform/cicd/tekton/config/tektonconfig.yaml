@@ -6,7 +6,17 @@ metadata:
 spec:
   targetNamespace: tekton
   profile: all
-
+  # config pruner to clean up old runs
+  # schedule clean up 8:00 AM every day
+  # keep max 3 runs history
+  pruner:
+    disabled: false
+    schedule: "0 8 * * *"
+    resources:
+      - taskrun
+      - pipelinerun
+    keep: 3
+    prune-per-resource: true
   dashboard:
     readonly: true
     options:
@@ -14,13 +24,28 @@ spec:
       configMaps: {}
       deployments: {}
       webhookConfigurationOptions: {}
-
+  # config result to store run results
+  # db use cnpq
+  result:
+    disabled: false
+    is_external_db: true
+    db_host: postgresql-cluster-rw.cnpg.svc.cluster.local
+    db_port: 5432
+    db_name: tektonresults
+    db_secret_user_key: username
+    db_secret_password_key: password
+    db_enable_auto_migration: true
+    db_sslmode: false
   platforms:
     kubernetes:
       pipelinesAsCode:
         options:
           deployments:
             pipelines-as-code-controller:
+              metadata:
+                labels:
+                  internal-ca: "true"
+            pipelines-as-code-watcher:
               metadata:
                 labels:
                   internal-ca: "true"

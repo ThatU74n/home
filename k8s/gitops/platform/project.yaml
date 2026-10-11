@@ -37,6 +37,12 @@ spec:
       namespace: gitea
     - server: https://kubernetes.default.svc
       namespace: harbor
+    - server: https://kubernetes.default.svc
+      namespace: tekton-pipelines
+    - server: https://kubernetes.default.svc
+      namespace: tekton
+    - server: https://kubernetes.default.svc
+      namespace: ci
     # database
     - server: https://kubernetes.default.svc
       namespace: cnpg

@@ -1,0 +1,20 @@
+---
+apiVersion: pipelinesascode.tekton.dev/v1alpha1
+kind: Repository
+metadata:
+  name: workstation
+  namespace: ci
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  url: https://gitea.k8s.u74n.internal/utan/workstation
+  git_provider:
+    url: https://gitea.k8s.u74n.internal
+    secret:
+      name: gitea-webhook-secret
+      key: provider.token
+    webhook_secret:
+      name: gitea-webhook-secret
+      key: webhook.secret
+
+

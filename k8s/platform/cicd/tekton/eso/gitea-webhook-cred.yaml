@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://github.com/datreeio/CRDs-catalog/raw/refs/heads/main/external-secrets.io/externalsecret_v1.json
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gitea-webhook-secret
+  namespace: ci
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  refreshInterval: 12h
+  secretStoreRef:
+    name: aws-parameter-store
+    kind: ClusterSecretStore
+  target:
+    name: gitea-webhook-secret
+    template:
+      engineVersion: v2
+      mergePolicy: Replace
+      data:
+        provider.token: "{{ .token }}"
+        webhook.secret: "{{ .hmac }}"
+  data:
+    - remoteRef:
+        key: /home/pac/gitea/token
+      secretKey: token
+    - remoteRef:
+        key: /home/pac/gitea/hmac
+      secretKey: hmac
+
