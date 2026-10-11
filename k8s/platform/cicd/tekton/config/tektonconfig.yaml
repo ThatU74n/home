@@ -35,10 +35,20 @@ spec:
     db_secret_user_key: username
     db_secret_password_key: password
     db_enable_auto_migration: true
-    db_sslmode: false
+    db_sslmode: disable
   platforms:
     kubernetes:
       pipelinesAsCode:
+        enable: true
+        settings:
+          application-name: Pipelines as Code CI
+          # set dashboard url for gitea pr navigation
+          # if need to switch to custom dashboard, use custom-console-url sets
+          # tekton-dashboar-url is an integration for its ecosystemj
+          tekton-dashboar-url: "https://tekton.k8s.u74n.internal"
+          # add error log to the pr
+          error-log-snippet: "true"
+          error-log-snippet-number-of-lines: "20"
         options:
           deployments:
             pipelines-as-code-controller:
