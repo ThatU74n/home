@@ -5,7 +5,7 @@ kind: Pooler
 metadata:
   name: postgresql-pooler
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   cluster:
     name: postgresql-cluster

@@ -10,14 +10,41 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
+  project: platform
   destination:
     server: https://kubernetes.default.svc
     namespace: cnpg
-  project: default
   sources:
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
-      path: k8s/platform/database/cloudnative-pg
+      ref: src
+
+    # source
+    - repoURL: https://cloudnative-pg.github.io/charts
+      targetRevision: 0.29.0
+      chart: cloudnative-pg
+      helm:
+        valueFiles:
+          - $src/k8s/platform/database/cloud_native_pg/values.yaml
+
+    # dependencies
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/database/cloud_native_pg/namespace
+
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/database/cloud_native_pg/external_secret
+
+    # resources
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/database/cloud_native_pg/cluster
+
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/database/cloud_native_pg/database
+
   syncPolicy:
     automated:
       selfHeal: true

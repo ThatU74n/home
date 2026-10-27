@@ -17,6 +17,7 @@ spec:
     - https://dl.gitea.com/charts
     - https://helm.goharbor.io
     # database
+    - https://cloudnative-pg.github.io/charts
     - https://valkey.io/valkey-helm
     # networking
     - https://helm.cilium.io

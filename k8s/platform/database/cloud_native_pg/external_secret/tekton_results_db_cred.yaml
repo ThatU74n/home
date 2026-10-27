@@ -3,27 +3,25 @@
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: grafana-db-cred
+  name: tekton-results-db-cred
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
-  finalizers:
-    - external-secrets.io/finalizers
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   refreshInterval: 12h
   secretStoreRef:
     name: aws-parameter-store
     kind: ClusterSecretStore
   target:
-    name: grafana-db-cred
+    name: tekton-results-postgres
     template:
       engineVersion: v2
       mergePolicy: Replace
       data:
-        username: grafana
+        username: tekton
         password: "{{ .password }}"
   data:
     - remoteRef:
-        key: /home/grafana/postgresql/password
+        key: /home/tektonresults/postgresql/password
         conversionStrategy: Default
         decodingStrategy: None
         metadataPolicy: None

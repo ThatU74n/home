@@ -1,11 +1,29 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/refs/heads/main/postgresql.cnpg.io/cluster_v1.json
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: postgresql-cluster
+  annotations:
+    cnpg.io/reconciliationLoop: enabled
+    argocd.argoproj.io/sync-wave: "1"
 spec:
-   managed:
+  instances: 1
+  storage:
+    size: 50Gi
+    storageClass: proxmox-csi-xfs
+    resizeInUseVolumes: true
+  managed:
     roles:
+      - connectionLimit: -1
+        ensure: present
+        inherit: true
+        name: authentik
+        superuser: false
+        login: true
+        passwordSecret:
+          name: authentik-db-cred
+
       - connectionLimit: -1
         ensure: present
         inherit: true
