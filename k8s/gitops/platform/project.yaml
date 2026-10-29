@@ -26,7 +26,6 @@ spec:
     - https://pkgs.tailscale.com/helmcharts
     # security
     - https://charts.external-secrets.io
-    - https://charts.goauthentik.io
     - https://kyverno.github.io/kyverno
     - quay.io/jetstack/charts
     # storage
@@ -61,8 +60,6 @@ spec:
       namespace: tailscale
     # observability
     # security
-    - server: https://kubernetes.default.svc
-      namespace: authentik
     - server: https://kubernetes.default.svc
       namespace: cert-manager
     - server: https://kubernetes.default.svc

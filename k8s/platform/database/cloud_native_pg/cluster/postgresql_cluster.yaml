@@ -18,15 +18,6 @@ spec:
       - connectionLimit: -1
         ensure: present
         inherit: true
-        name: authentik
-        superuser: false
-        login: true
-        passwordSecret:
-          name: authentik-db-cred
-
-      - connectionLimit: -1
-        ensure: present
-        inherit: true
         name: gitea
         superuser: false
         login: true
