@@ -48,3 +48,20 @@ specs:
           - ports:
               - port: "9443"
                 protocol: TCP
+
+  - description: egress for helm job to talk to apiserver
+    endpointSelector:
+      matchExpressions:
+        - key: batch.kubernetes.io/job-name
+          operator: In
+          values:
+            - kyverno-migrate-resources
+            - kyverno-rm-webhooks
+            - kyverno-scale-to-zero
+    egress:
+      - toEntities:
+          - kube-apiserver
+        toPorts:
+          - ports:
+              - port: "6443"
+                protocol: TCP
