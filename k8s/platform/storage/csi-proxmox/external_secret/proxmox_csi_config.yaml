@@ -4,6 +4,8 @@ apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
   name: proxmox-csi-config
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   refreshInterval: 12h
   secretStoreRef:
@@ -17,13 +19,28 @@ spec:
       data:
         config.yaml: |
           clusters:
-            - url: https://proxmox.u74n.internal:8006/api2/json
+            - url: "{{ .url }}"
               insecure: true
-              token_id:  kubernetes-csi@pve!proxmox-csi
+              token_id: "{{ .tokenId }}"
               token_secret: "{{ .tokenSecret }}"
               region: Region-1
   data:
     - remoteRef:
+        key: /home/proxmox/csi/url
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
+      secretKey: url
+    - remoteRef:
+        key: /home/proxmox/csi/token_id
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
+      secretKey: tokenId
+    - remoteRef:
         key: /home/proxmox/csi/token_secret
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
       secretKey: tokenSecret
 

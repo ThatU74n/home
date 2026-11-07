@@ -10,18 +10,26 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
+  project: platform
   destination:
     server: https://kubernetes.default.svc
     namespace: external-secrets
-  project: default
   sources:
+    # source
     - repoURL: https://charts.external-secrets.io
       chart: external-secrets
       targetRevision: 0.14.3
 
+    # dependencies
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/security/eso/namespace
+
+    # resources
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       path: k8s/platform/security/eso
+
   syncPolicy:
     automated:
       selfHeal: true

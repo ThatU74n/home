@@ -19,6 +19,7 @@ spec:
       targetRevision: main
       ref: src
 
+    # source
     - repoURL: quay.io/jetstack/charts
       targetRevision: v1.21.0
       chart: cert-manager
@@ -26,6 +27,12 @@ spec:
         valueFiles:
           - $src/k8s/platform/security/cert-manager/values.yaml
 
+    # dependencies
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/security/cert-manager/namespace
+
+    # resources
     - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
       targetRevision: main
       path: k8s/platform/security/cert-manager

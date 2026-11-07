@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://github.com/datreeio/CRDs-catalog/raw/refs/heads/main/cilium.io/ciliumnetworkpolicy_v2.json
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: kyverno-network-policy
+  namespace: kyverno
+specs:
+  - description: "default egress"
+    endpointSelector:
+      matchLabels:
+        app.kubernetes.io/part-of: kyverno
+        app.kubernetes.io/instance: kyverno
+    egress:
+      - toEntities:
+          - kube-apiserver
+        toPorts:
+          - ports:
+              - port: "6443"
+                protocol: TCP
+
+  - description: "ingress rule for admission controller"
+    endpointSelector:
+      matchLabels:
+        app.kubernetes.io/part-of: kyverno
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/component: admission-controller
+    ingress:
+      - fromEntities:
+          - kube-apiserver
+          - remote-node
+        toPorts:
+          - ports:
+              - port: "9443"
+                protocol: TCP
+
+  - description: ingress rule for cleanup controller
+    endpointSelector:
+      matchLabels:
+        app.kubernetes.io/part-of: kyverno
+        app.kubernetes.io/instance: kyverno
+        app.kubernetes.io/component: cleanup-controller
+    ingress:
+      - fromEntities:
+          - kube-apiserver
+          - remote-node
+        toPorts:
+          - ports:
+              - port: "9443"
+                protocol: TCP

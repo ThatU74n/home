@@ -19,12 +19,27 @@ spec:
       targetRevision: main
       ref: src
 
+    # source
     - repoURL: https://kyverno.github.io/kyverno
       targetRevision: 3.8.2
       chart: kyverno
       helm:
         valueFiles:
           - $src/k8s/platform/security/kyverno/values.yaml
+
+    # dependencies
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/security/kyverno/namespace
+
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/security/kyverno/netwwork_policy
+
+    # resources
+    - repoURL: https://gitea.k8s.u74n.internal/utan/home.git
+      targetRevision: main
+      path: k8s/platform/security/kyverno/generating_policy
 
   syncPolicy:
     automated:
